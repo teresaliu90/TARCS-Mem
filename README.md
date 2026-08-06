@@ -8,6 +8,16 @@
 
 [中文说明](README.zh-CN.md) · [Governance console](docs/CONSOLE.md) · [MCP & OpenAI integrations](docs/INTEGRATIONS.md) · [DeepSeek cloud setup (中文)](docs/DEEPSEEK_API_CN.md) · [Production deployment](docs/PRODUCTION_DEPLOYMENT.md) · [Community and enterprise direction](docs/COMMUNITY_AND_ENTERPRISE.md) · [Architecture](docs/ARCHITECTURE.md) · [Governance pipeline design](docs/GOVERNANCE_PIPELINE_DESIGN.md) · [Next-stage upgrade plan](docs/NEXT_STAGE_UPGRADE_PLAN.md) · [Algorithm](docs/ALGORITHM.md)
 
+## Project status
+
+**Early Alpha / enterprise AI governance reference implementation.** TARCS-Mem is suitable for
+local evaluation, synthetic demonstrations and bounded design-partner pilots; it is not a
+certified production security product. The current release provides a tested end-to-end local
+governance path, while verified identity, HA storage and enterprise audit operations remain
+deployment responsibilities or roadmap work. See the [roadmap](ROADMAP.md),
+[next-stage plan](docs/NEXT_STAGE_UPGRADE_PLAN.md) and
+[Community/Enterprise boundary](docs/COMMUNITY_AND_ENTERPRISE.md).
+
 TARCS-Mem answers a question that ordinary memory/RAG layers leave open: **which new facts may become active enterprise memory, and which evidence may be used to answer right now?**
 
 It is deliberately not another general-purpose chatbot. It is a reusable governance layer for policy Q&A, ERP/operations assistants, and other enterprise agents where stale, low-authority, or unverified information is harmful.
@@ -47,7 +57,7 @@ It is deliberately not another general-purpose chatbot. It is a reusable governa
 - **LangChain and LlamaIndex adapters** – convert governed evidence into each framework's native retriever with one function call; neither adapter can read the unfiltered candidate pool.
 - **Incremental Confluence connector** – Confluence Cloud REST API v2 cursor pagination, version/hash checkpoints, deterministic retry-safe IDs, safe deletion handling and human-review defaults.
 - **Beginner-friendly governance console** – one FastAPI-served React workspace for health, safe query experiments, governed memories, named human review, privacy-safe traces and integrations.
-- **Production-oriented delivery** – retry-safe write idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 92 tests, Python 3.11/3.12 and Node CI, clean-wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
+- **Production-oriented delivery** – retry-safe write idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 94 tests, Python 3.11/3.12 and Node CI, clean-wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
 
 `TARCS-Mem` is a reference implementation, not a claim of production certification. Request-body roles are demo inputs, not trusted identity claims. A real production deployment must bind tenant/roles from OIDC/SSO, externalize authorization policy, add encryption/key management, malware scanning, retention controls, SIEM export, backup/restore and load/red-team tests.
 
@@ -71,7 +81,9 @@ User question -> hybrid retrieval -> RRF -> TARCS constraints/ranking
 Read the formal choices in [docs/ALGORITHM.md](docs/ALGORITHM.md), the current component boundaries
 in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and the explicitly proposed post-v0.8 event,
 projection and configurable-pipeline design in
-[docs/GOVERNANCE_PIPELINE_DESIGN.md](docs/GOVERNANCE_PIPELINE_DESIGN.md).
+[docs/GOVERNANCE_PIPELINE_DESIGN.md](docs/GOVERNANCE_PIPELINE_DESIGN.md). The first experimental
+answer-centric interface is documented in
+[docs/ANSWER_AUDIT_TRAIL_DESIGN.md](docs/ANSWER_AUDIT_TRAIL_DESIGN.md).
 
 ## Try it in five minutes
 

@@ -8,6 +8,14 @@
 
 [English README](README.md) · [治理控制台](docs/CONSOLE.md) · [MCP 与 OpenAI 接入](docs/INTEGRATIONS.md) · [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md) · [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) · [社区版与企业服务边界](docs/COMMUNITY_AND_ENTERPRISE_CN.md) · [架构说明](docs/ARCHITECTURE.md) · [治理流水线设计](docs/GOVERNANCE_PIPELINE_DESIGN.md) · [下一阶段升级方案](docs/NEXT_STAGE_UPGRADE_PLAN.md) · [安全设计](docs/SECURITY.md) · [可观测性](docs/OBSERVABILITY.md) · [真实评测](docs/EVALUATION.md)
 
+## 项目状态
+
+**Early Alpha / 企业 AI 治理参考实现。** 当前版本适合本地评估、合成数据演示和边界明确的
+Design Partner 试点，并非已认证的企业生产安全产品。仓库已提供经过测试的端到端本地治理
+路径；可信身份、高可用存储和企业审计运维仍属于部署责任或路线图工作。详见
+[路线图](ROADMAP.md)、[下一阶段升级方案](docs/NEXT_STAGE_UPGRADE_PLAN.md)和
+[社区版与企业服务边界](docs/COMMUNITY_AND_ENTERPRISE_CN.md)。
+
 ## 项目解决什么问题
 
 普通 RAG 通常只回答“哪些文本与问题最相关”，但企业知识应用还必须回答：
@@ -202,7 +210,11 @@ tarcsmem evaluate-public --queries 120 --distractors 300 \
   --output docs/benchmarks/fiqa-public-report.json
 ```
 
-当前自动化测试共 **92 项**，覆盖治理、安全、ACL、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、限流、幂等写入、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、可选依赖、Docker 构建，并从 wheel 在全新环境中执行 CLI 冒烟测试。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
+当前自动化测试共 **94 项**，覆盖治理、安全、ACL、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、回答审计链类型契约、限流、幂等写入、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、可选依赖、Docker 构建，并从 wheel 在全新环境中执行 CLI 冒烟测试。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
+
+面向下一阶段的 `AnswerAuditTrail` 类型契约和计划中的
+`get_answer_audit_trail(answer_id)` 安全边界见
+[回答审计链设计](docs/ANSWER_AUDIT_TRAIL_DESIGN.md)。该 endpoint 在 v0.8 尚未实现。
 
 经验证的旧版 v0.7 中文演示和逐秒脚本保留在 [docs/demo](docs/demo/)；当前产品界面为 v0.8 治理控制台。
 

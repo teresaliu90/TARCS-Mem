@@ -662,7 +662,7 @@ agree on names and color conventions.
 | --- | --- |
 | `good first issue` | Bounded work that can be completed without changing governance semantics |
 | `help wanted` | Maintainer welcomes an external implementation or investigation |
-| `docs` | README, guides, diagrams, examples and translations |
+| `documentation` | README, guides, diagrams, examples and translations |
 | `ui/ux` | Console information hierarchy, accessibility, responsive behavior and visual polish |
 | `data-source` | Connector, checkpoint, deletion, ACL mapping and source terms |
 | `integration` | MCP, OpenAI-compatible, LangChain, LlamaIndex or provider adapters |
@@ -681,7 +681,7 @@ agree on names and color conventions.
 1. **Add a three-step first-run checklist to the governance console** — Show seed demo, run a
    governed query and inspect the evidence chain. Labels: `ui/ux`, `good first issue`, `status: ready`.
 2. **Add actionable empty states for console pages** — Cover no memories, no reviews, no traces,
-   no connector and projection lag. Labels: `ui/ux`, `docs`, `status: ready`.
+   no connector and projection lag. Labels: `ui/ux`, `documentation`, `status: ready`.
 3. **Add an answer-centric evidence-chain response shape** — Link answer ID, evidence pack,
    selected/excluded reasons and memory lineage. Labels: `audit`, `governance-core`, `status: needs-design`.
 4. **Publish a verified Confluence connector contract fixture kit** — Include pagination,
@@ -708,7 +708,7 @@ agree on names and color conventions.
 14. **Add responsive and keyboard navigation checks for the console** — Cover 320px, desktop,
     focus order, labels and reduced motion. Labels: `ui/ux`, `good first issue`.
 15. **Document a PostgreSQL/Qdrant pilot topology and restore drill** — Include migration,
-    backup, restore and rollback evidence requirements. Labels: `production`, `docs`.
+    backup, restore and rollback evidence requirements. Labels: `production`, `documentation`.
 
 ## Contributing & Community — README draft
 

@@ -14,6 +14,10 @@ For the broader product-facing evolution, see the [next-stage upgrade plan](NEXT
 which covers architecture paradigms, console UX, PoC-to-production readiness, community backlog
 and service boundaries.
 
+The experimental [answer audit trail contract](ANSWER_AUDIT_TRAIL_DESIGN.md) defines the first
+typed interface for answer-centric evidence lineage. It is a contract and implementation sequence,
+not a claim that v0.8 already persists evidence packs or serves the proposed endpoint.
+
 ## Write path: GuardWrite
 
 1. An upstream extractor creates a typed `MemoryRecord` with tenant, roles and classification.
