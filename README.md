@@ -6,7 +6,7 @@
 ![Python 3.11 and 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776AB)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1f7a52.svg)](LICENSE)
 
-[中文说明](README.zh-CN.md) · [Governance console](docs/CONSOLE.md) · [MCP & OpenAI integrations](docs/INTEGRATIONS.md) · [DeepSeek cloud setup (中文)](docs/DEEPSEEK_API_CN.md) · [Production deployment](docs/PRODUCTION_DEPLOYMENT.md) · [Architecture](docs/ARCHITECTURE.md) · [Algorithm](docs/ALGORITHM.md)
+[中文说明](README.zh-CN.md) · [Governance console](docs/CONSOLE.md) · [MCP & OpenAI integrations](docs/INTEGRATIONS.md) · [DeepSeek cloud setup (中文)](docs/DEEPSEEK_API_CN.md) · [Production deployment](docs/PRODUCTION_DEPLOYMENT.md) · [Community and enterprise direction](docs/COMMUNITY_AND_ENTERPRISE.md) · [Architecture](docs/ARCHITECTURE.md) · [Algorithm](docs/ALGORITHM.md)
 
 TARCS-Mem answers a question that ordinary memory/RAG layers leave open: **which new facts may become active enterprise memory, and which evidence may be used to answer right now?**
 
@@ -289,6 +289,23 @@ Each memory carries provenance and governance metadata:
   "status": "verified_active"
 }
 ```
+
+## Community Edition and future enterprise services
+
+The MIT-licensed Community Edition is intentionally complete enough to evaluate and run a
+useful local governance path. It includes the governance core, v0.8 console, Docker/SQLite
+deployment, MCP and OpenAI-compatible integrations, basic observability and synthetic evaluation.
+
+| Community Edition | Future enterprise or paid service |
+| --- | --- |
+| GuardWrite/GuardRead, time/version/conflict rules, abstention and citation verification | Hosted control plane, managed upgrades, SLA and support |
+| Local identity inputs, ACL/classification baseline and cloud-egress gate | OIDC/SSO, SCIM, verified claims, enterprise RBAC and policy administration |
+| SQLite/Docker, Qdrant, Confluence and framework adapters | PostgreSQL/HA, multi-tenant operations, SIEM/OTLP, retention/legal hold and compliance reports |
+| Public issues, docs and synthetic fixtures | Organization-specific connectors, private deployment, training and design-partner evaluation |
+
+Paid capabilities are a planned boundary, not a claim that they already exist. The project will
+not put core governance semantics behind a paywall; hosted operations, private integrations and
+deployment expertise are the intended commercial surface. See [Community and enterprise direction](docs/COMMUNITY_AND_ENTERPRISE.md).
 
 ## Evaluation
 

@@ -2,6 +2,12 @@
 
 Thank you for improving trusted enterprise memory governance.
 
+The public repository is the Community Edition. It is meant to stay useful on its own; hosted
+operations, private integrations and organization-specific support are future service surfaces,
+not missing pieces that contributors are expected to recreate in the core. Read the [community
+and enterprise direction](docs/COMMUNITY_AND_ENTERPRISE.md) before proposing a commercial-facing
+feature.
+
 You do not need to understand the complete TARCS algorithm before contributing. Documentation,
 examples, accessibility, UI polish, connectors, SDKs, deployment templates and evaluation tools
 are all valuable entry points. Start with a `good first issue` or `help wanted` issue whose status
@@ -20,6 +26,15 @@ is `ready`.
 
 Ask on the issue before starting a large connector, SDK or governance change. This avoids parallel
 implementations and ensures the security boundary is agreed before code is written.
+
+## Maintainer-friendly collaboration map
+
+The maintainer can usually complete onboarding copy, synthetic demos, console empty states,
+accessibility fixes, bilingual documentation and contract tests independently. Collaboration is
+especially valuable for real-world connector ownership, mobile/accessibility testing with new
+users, security threat-model review, typed SDK maintenance and design-partner evaluation. Keep
+the first contribution small and measurable; a screenshot, fixture, failing test or verified
+quickstart is a good starting point.
 
 ## Local setup
 

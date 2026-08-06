@@ -6,7 +6,7 @@
 ![Python 3.11 与 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776AB)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1f7a52.svg)](LICENSE)
 
-[English README](README.md) · [治理控制台](docs/CONSOLE.md) · [MCP 与 OpenAI 接入](docs/INTEGRATIONS.md) · [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md) · [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) · [架构说明](docs/ARCHITECTURE.md) · [安全设计](docs/SECURITY.md) · [可观测性](docs/OBSERVABILITY.md) · [真实评测](docs/EVALUATION.md)
+[English README](README.md) · [治理控制台](docs/CONSOLE.md) · [MCP 与 OpenAI 接入](docs/INTEGRATIONS.md) · [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md) · [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) · [社区版与企业服务边界](docs/COMMUNITY_AND_ENTERPRISE_CN.md) · [架构说明](docs/ARCHITECTURE.md) · [安全设计](docs/SECURITY.md) · [可观测性](docs/OBSERVABILITY.md) · [真实评测](docs/EVALUATION.md)
 
 ## 项目解决什么问题
 
@@ -174,6 +174,22 @@ tarcsmem ui --db ./data/tarcsmem-deepseek.db
 ```
 
 默认使用 `deepseek-v4-flash` 非思考模式；可通过 `TARCSMEM_DEEPSEEK_MODEL=deepseek-v4-pro` 切换。启用云端生成时，经过权限与时间治理后选出的证据会发送给 DeepSeek。系统默认强制只允许 `public,internal` 分类出境；`confidential/restricted` 会在调用前被拦截，只有安全负责人显式调整 `TARCSMEM_CLOUD_ALLOWED_CLASSIFICATIONS` 后才会放行。完整参数、安全边界和故障排查见 [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md)。
+
+## 社区版与未来增值服务
+
+MIT 许可的社区版不会故意削弱核心治理能力。用户可以免费运行完整的本地治理路径，先
+验证价值，再决定是否需要企业集成或托管支持：
+
+| 社区版（当前可用） | 未来企业服务（规划/按项目交付） |
+| --- | --- |
+| GuardWrite/GuardRead、时间/版本/冲突治理、可信拒答与引用校验 | 托管控制面、升级运维、SLA 与技术支持 |
+| 本地演示身份、ACL/数据分级基线与云端出境拦截 | OIDC/SSO、SCIM、可信身份声明、企业 RBAC 与策略管理 |
+| SQLite/Docker、Qdrant、Confluence 和框架适配器 | PostgreSQL/高可用、多租户运维、SIEM/OTLP、留存/法律保全与合规报告 |
+| 公开 Issue、文档和合成数据 fixture | 企业专属连接器、私有部署、培训和 Design Partner 评估 |
+
+右侧是未来边界，不代表仓库当前已经提供这些功能。商业化重点是托管运维、私有集成和
+落地服务，而不是把权限、冲突、引用和拒答等信任基础锁在付费墙后。完整原则、可独立完成的
+前端工作和适合寻找协作者的任务见 [社区版与企业服务方向](docs/COMMUNITY_AND_ENTERPRISE_CN.md)。
 
 ## 测试与评估
 
