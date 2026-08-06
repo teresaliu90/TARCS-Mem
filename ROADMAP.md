@@ -26,6 +26,7 @@ managed support. See [Community and enterprise direction](docs/COMMUNITY_AND_ENT
 
 - Freeze and document the v0.8 public memory, query and review schemas.
 - Review and sequence the proposed event-ledger, projection and configurable-pipeline design.
+- Use the [next-stage upgrade plan](docs/NEXT_STAGE_UPGRADE_PLAN.md) to turn the console, production and community backlog into scoped issues.
 - Add contract tests for console APIs and connector invariants.
 - Publish a versioned OpenAPI artifact for SDK generation.
 - Consolidate current-version references, screenshots and release notes.

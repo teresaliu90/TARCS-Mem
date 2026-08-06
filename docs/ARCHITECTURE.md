@@ -10,6 +10,10 @@ policy bundles, a tamper-evident audit envelope, rebuildable active-memory proje
 answer-centric evidence chains and configurable retrieval plugins. Proposed interfaces in that
 document are not claims about current behavior.
 
+For the broader product-facing evolution, see the [next-stage upgrade plan](NEXT_STAGE_UPGRADE_PLAN.md),
+which covers architecture paradigms, console UX, PoC-to-production readiness, community backlog
+and service boundaries.
+
 ## Write path: GuardWrite
 
 1. An upstream extractor creates a typed `MemoryRecord` with tenant, roles and classification.

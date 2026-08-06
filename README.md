@@ -6,7 +6,7 @@
 ![Python 3.11 and 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776AB)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1f7a52.svg)](LICENSE)
 
-[中文说明](README.zh-CN.md) · [Governance console](docs/CONSOLE.md) · [MCP & OpenAI integrations](docs/INTEGRATIONS.md) · [DeepSeek cloud setup (中文)](docs/DEEPSEEK_API_CN.md) · [Production deployment](docs/PRODUCTION_DEPLOYMENT.md) · [Community and enterprise direction](docs/COMMUNITY_AND_ENTERPRISE.md) · [Architecture](docs/ARCHITECTURE.md) · [Governance pipeline design](docs/GOVERNANCE_PIPELINE_DESIGN.md) · [Algorithm](docs/ALGORITHM.md)
+[中文说明](README.zh-CN.md) · [Governance console](docs/CONSOLE.md) · [MCP & OpenAI integrations](docs/INTEGRATIONS.md) · [DeepSeek cloud setup (中文)](docs/DEEPSEEK_API_CN.md) · [Production deployment](docs/PRODUCTION_DEPLOYMENT.md) · [Community and enterprise direction](docs/COMMUNITY_AND_ENTERPRISE.md) · [Architecture](docs/ARCHITECTURE.md) · [Governance pipeline design](docs/GOVERNANCE_PIPELINE_DESIGN.md) · [Next-stage upgrade plan](docs/NEXT_STAGE_UPGRADE_PLAN.md) · [Algorithm](docs/ALGORITHM.md)
 
 TARCS-Mem answers a question that ordinary memory/RAG layers leave open: **which new facts may become active enterprise memory, and which evidence may be used to answer right now?**
 
@@ -357,6 +357,10 @@ semantics require an explicit threat model and adversarial tests.
 
 The next six months focus on faster onboarding, connector contracts, TypeScript SDK support,
 design-partner evidence and production-readiness verification. See [`ROADMAP.md`](ROADMAP.md).
+
+The broader architecture, console, production and community upgrade plan is in
+[docs/NEXT_STAGE_UPGRADE_PLAN.md](docs/NEXT_STAGE_UPGRADE_PLAN.md). It distinguishes current
+v0.8 behavior from proposed work and includes copyable issue, UX and README drafts.
 
 ## License
 

@@ -6,7 +6,7 @@
 ![Python 3.11 与 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776AB)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1f7a52.svg)](LICENSE)
 
-[English README](README.md) · [治理控制台](docs/CONSOLE.md) · [MCP 与 OpenAI 接入](docs/INTEGRATIONS.md) · [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md) · [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) · [社区版与企业服务边界](docs/COMMUNITY_AND_ENTERPRISE_CN.md) · [架构说明](docs/ARCHITECTURE.md) · [治理流水线设计](docs/GOVERNANCE_PIPELINE_DESIGN.md) · [安全设计](docs/SECURITY.md) · [可观测性](docs/OBSERVABILITY.md) · [真实评测](docs/EVALUATION.md)
+[English README](README.md) · [治理控制台](docs/CONSOLE.md) · [MCP 与 OpenAI 接入](docs/INTEGRATIONS.md) · [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md) · [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) · [社区版与企业服务边界](docs/COMMUNITY_AND_ENTERPRISE_CN.md) · [架构说明](docs/ARCHITECTURE.md) · [治理流水线设计](docs/GOVERNANCE_PIPELINE_DESIGN.md) · [下一阶段升级方案](docs/NEXT_STAGE_UPGRADE_PLAN.md) · [安全设计](docs/SECURITY.md) · [可观测性](docs/OBSERVABILITY.md) · [真实评测](docs/EVALUATION.md)
 
 ## 项目解决什么问题
 
@@ -243,6 +243,9 @@ examples/           可复制的 MCP 与 OpenAI 兼容接入示例
 ## 路线图
 
 未来六个月优先改善上手体验、连接器契约、TypeScript SDK、Design Partner 试点证据和生产准备验证，详见 [`ROADMAP.md`](ROADMAP.md)。
+
+完整的架构范式、控制台 UX、生产成熟度、社区和商业化升级方案见
+[下一阶段升级方案](docs/NEXT_STAGE_UPGRADE_PLAN.md)。文档明确区分当前 v0.8 能力和未来规划。
 
 ## 许可证
 
