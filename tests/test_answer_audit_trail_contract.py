@@ -102,6 +102,7 @@ def test_service_persists_and_rebuilds_answer_evidence_lineage():
     assert trail.evidence_pack_id == result.evidence_pack_id
     assert trail.outcome == "answered"
     assert trail.selected_evidence[0].memory_id == "sales-v2"
+    assert trail.selected_evidence[0].supersedes_memory_id == "sales-v1"
     assert trail.verification["citation_membership"] == "passed"
     assert trail.integrity == {
         "chain_verified": False,

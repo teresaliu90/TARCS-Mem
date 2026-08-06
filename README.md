@@ -24,7 +24,7 @@ TARCS-Mem answers a question that ordinary memory/RAG layers leave open: **which
 
 It is deliberately not another general-purpose chatbot. It is a reusable governance layer for policy Q&A, ERP/operations assistants, and other enterprise agents where stale, low-authority, or unverified information is harmful.
 
-![TARCS-Mem governed answer with source and decision trace](docs/demo/assets/02-answer-v07.jpg)
+![TARCS-Mem answer evidence chain](docs/demo/assets/05-answer-evidence-chain-v08.jpg)
 
 | Ordinary RAG | TARCS-Mem |
 | --- | --- |
@@ -60,7 +60,7 @@ It is deliberately not another general-purpose chatbot. It is a reusable governa
 - **LangChain and LlamaIndex adapters** – convert governed evidence into each framework's native retriever with one function call; neither adapter can read the unfiltered candidate pool.
 - **Incremental Confluence connector** – Confluence Cloud REST API v2 cursor pagination, version/hash checkpoints, deterministic retry-safe IDs, safe deletion handling and human-review defaults.
 - **Beginner-friendly governance console** – one FastAPI-served React workspace for health, safe query experiments, governed memories, named human review, privacy-safe traces and integrations.
-- **Production-oriented delivery** – retry-safe write idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 97 tests, Python 3.11/3.12 and Node CI, clean-wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
+- **Production-oriented delivery** – retry-safe write/query idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 98 tests, Python 3.11/3.12 and Node CI, clean-wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
 
 `TARCS-Mem` is a reference implementation, not a claim of production certification. Request-body roles are demo inputs, not trusted identity claims. A real production deployment must bind tenant/roles from OIDC/SSO, externalize authorization policy, add encryption/key management, malware scanning, retention controls, SIEM export, backup/restore and load/red-team tests.
 

@@ -85,6 +85,7 @@ export type AnswerAuditTrail = {
     scores: Record<string, number>;
     write_event_ids: string[];
     approval_event_ids: string[];
+    supersedes_memory_id: string | null;
   }>;
   excluded_summary: Record<string, number>;
   policy_versions: Record<

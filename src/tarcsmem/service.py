@@ -108,6 +108,7 @@ class TARCSMemoryService:
             },
             "write_event_ids": write_event_ids,
             "approval_event_ids": approval_event_ids,
+            "supersedes_memory_id": item.record.supersedes,
         }
 
     @staticmethod
@@ -419,6 +420,9 @@ class TARCSMemoryService:
                 )
             root_span.attributes["outcome"] = result.outcome
             root_span.attributes["selected_records"] = len(result.selected)
+            root_span.attributes["answer_id"] = answer_id
+            root_span.attributes["evidence_pack_id"] = evidence_pack_id
+            root_span.attributes["correlation_id"] = correlation_id
             trace_id = root_span.trace_id
             query_event = AuditEvent(
                 EventType.QUERY,
@@ -579,6 +583,11 @@ class TARCSMemoryService:
                     },
                     write_event_ids=tuple(item.get("write_event_ids", [])),
                     approval_event_ids=tuple(item.get("approval_event_ids", [])),
+                    supersedes_memory_id=(
+                        str(item["supersedes_memory_id"])
+                        if item.get("supersedes_memory_id")
+                        else None
+                    ),
                 )
             )
 

@@ -80,7 +80,8 @@ Example response (values abbreviated for readability):
       ],
       "scores": {"rrf": 1.0, "tarcs": 0.8654},
       "write_event_ids": ["b2830f6e-…", "82ce4109-…"],
-      "approval_event_ids": []
+      "approval_event_ids": [],
+      "supersedes_memory_id": "sales-v1"
     }
   ],
   "excluded_summary": {
@@ -138,6 +139,8 @@ This path requires no model API key, model download or vector database.
 The automated suite covers:
 
 - stable IDs across the service, native query API and OpenAI-compatible response;
+- `Idempotency-Key` replay on `/v1/query` returns the same answer and does not append another
+  evidence lineage;
 - selected evidence and exact write-lineage references;
 - latest finalization outcome after generation, citation failure or egress blocking;
 - same-tenant enforcement and current ACL/role rechecks at the original business date;

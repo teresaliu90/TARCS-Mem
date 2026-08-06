@@ -43,7 +43,7 @@ TARCS-Mem 在知识写入、检索和生成之间增加可解释的治理层：
 - **Confluence 真实增量同步**：基于 Confluence Cloud REST API v2，支持游标分页、版本与内容哈希检查点、确定性幂等 ID、安全删除确认和默认人工审核。
 - **新手友好的治理控制台**：通过三步引导完成演示数据确认、治理问答和回答证据链查看，也可继续使用可信记忆、具名人工审核、隐私安全 Trace 和集成配置。
 
-![TARCS-Mem 带来源与决策轨迹的可信回答](docs/demo/assets/02-answer-v07.jpg)
+![TARCS-Mem 回答证据链](docs/demo/assets/05-answer-evidence-chain-v08.jpg)
 
 | 普通 RAG | TARCS-Mem |
 | --- | --- |
@@ -216,7 +216,7 @@ tarcsmem evaluate-public --queries 120 --distractors 300 \
   --output docs/benchmarks/fiqa-public-report.json
 ```
 
-当前自动化测试共 **97 项**，覆盖治理、安全、ACL、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、回答审计 API、限流、幂等写入、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、可选依赖、Docker 构建，并从 wheel 在全新环境中执行 CLI 冒烟测试。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
+当前自动化测试共 **98 项**，覆盖治理、安全、ACL、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、回答审计 API、限流、幂等写入/查询、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、可选依赖、Docker 构建，并从 wheel 在全新环境中执行 CLI 冒烟测试。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
 
 已实现的 `AnswerAuditTrail` 类型、`get_answer_audit_trail(answer_id)` 服务接口、HTTP API、
 权限边界与生产限制见 [回答审计链设计](docs/ANSWER_AUDIT_TRAIL_DESIGN.md)。

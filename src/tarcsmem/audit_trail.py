@@ -44,6 +44,7 @@ class AnswerEvidenceLineage:
     scores: dict[str, float]
     write_event_ids: tuple[str, ...]
     approval_event_ids: tuple[str, ...] = ()
+    supersedes_memory_id: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -56,6 +57,7 @@ class AnswerEvidenceLineage:
             "scores": dict(self.scores),
             "write_event_ids": list(self.write_event_ids),
             "approval_event_ids": list(self.approval_event_ids),
+            "supersedes_memory_id": self.supersedes_memory_id,
         }
 
 

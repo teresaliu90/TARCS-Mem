@@ -55,6 +55,10 @@ def test_service_query_exposes_trace_but_never_raw_question():
     result = service.query(question, date(2026, 8, 15))
     assert result.trace_id
     assert result.latency_ms is not None
-    assert question not in str(service.observability.tracer.buffer.recent(50))
+    spans = service.observability.tracer.buffer.recent(50)
+    root_span = next(span for span in spans if span["name"] == "tarcsmem.query")
+    assert root_span["attributes"]["answer_id"] == result.answer_id
+    assert root_span["attributes"]["evidence_pack_id"] == result.evidence_pack_id
+    assert question not in str(spans)
     assert question not in str(service.audit_trail(result.answer_id))
     service.close()

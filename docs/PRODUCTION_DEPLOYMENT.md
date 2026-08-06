@@ -24,7 +24,7 @@ TARCSMEM_RATE_LIMIT_REQUESTS_PER_MINUTE=120
 TARCSMEM_IDEMPOTENCY_TTL_HOURS=24
 ```
 
-The in-process rate limiter is keyed to the direct network peer, intentionally does not trust forwarding headers, and is not a substitute for a distributed gateway limit. For retry-safe writes, send an 8–128 character `Idempotency-Key` on `POST /v1/memories` and review requests. The server hashes the request for comparison, persists the first successful response for the configured TTL, replays an identical retry, and rejects reuse of a key with a different body.
+The in-process rate limiter is keyed to the direct network peer, intentionally does not trust forwarding headers, and is not a substitute for a distributed gateway limit. For retry-safe writes and governed queries, send an 8–128 character `Idempotency-Key` on `POST /v1/memories`, `POST /v1/query` and review requests. The server hashes the request for comparison, persists the first successful response for the configured TTL, replays an identical retry, and rejects reuse of a key with a different body. Query replay preserves the original answer/evidence-pack/correlation IDs and does not append duplicate lineage.
 
 For DeepSeek cloud generation, set `TARCSMEM_LLM_PROVIDER=deepseek` and provide `DEEPSEEK_API_KEY` through your secret manager. The gate below still runs before every generation call:
 

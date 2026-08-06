@@ -891,6 +891,31 @@ function EvidenceChainView({ trail }: { trail: AnswerAuditTrail }) {
                 {evidence.classification} · TARCS {evidence.scores.tarcs ?? "—"}{" "}
                 · {evidence.write_event_ids.length} 个写入事件
               </small>
+              <div className="chain-lineage">
+                <span>
+                  写入沿袭
+                  <code>
+                    {evidence.write_event_ids
+                      .map((eventId) => eventId.slice(0, 8))
+                      .join(" → ")}
+                  </code>
+                </span>
+                {evidence.supersedes_memory_id && (
+                  <span>
+                    替代版本 <code>{evidence.supersedes_memory_id}</code>
+                  </span>
+                )}
+                <span>
+                  人工审批
+                  <code>
+                    {evidence.approval_event_ids.length
+                      ? evidence.approval_event_ids
+                          .map((eventId) => eventId.slice(0, 8))
+                          .join(" → ")
+                      : "无"}
+                  </code>
+                </span>
+              </div>
             </div>
           ))
         ) : (
@@ -1273,6 +1298,9 @@ function Impact({ label, value }: { label: string; value: string }) {
 function ObservabilityPage() {
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState("");
+  const [auditTrail, setAuditTrail] = useState<AnswerAuditTrail | null>(null);
+  const [auditLoading, setAuditLoading] = useState("");
+  const [auditError, setAuditError] = useState("");
   const load = async () => {
     try {
       setError("");
@@ -1284,6 +1312,18 @@ function ObservabilityPage() {
   useEffect(() => {
     void load();
   }, []);
+  const loadAudit = async (answerId: string) => {
+    setAuditLoading(answerId);
+    setAuditError("");
+    try {
+      setAuditTrail(await api.answerAudit(answerId));
+    } catch (err) {
+      setAuditTrail(null);
+      setAuditError(err instanceof Error ? err.message : "无法加载回答证据链");
+    } finally {
+      setAuditLoading("");
+    }
+  };
   const spans =
     (data?.recent_spans as Array<Record<string, unknown>> | undefined) ?? [];
   return (
@@ -1309,23 +1349,45 @@ function ObservabilityPage() {
             </div>
             <Activity size={18} />
           </div>
-          {spans.slice(0, 8).map((span, index) => (
-            <div className="trace-row" key={`${String(span.span_id)}-${index}`}>
-              <span
-                className={`trace-dot ${span.status === "error" ? "error" : "ok"}`}
-              />
-              <div>
-                <strong>{String(span.name)}</strong>
-                <small>
-                  trace {String(span.trace_id).slice(0, 12)}… ·{" "}
-                  {String(span.duration_ms)} ms
-                </small>
+          {spans.slice(0, 8).map((span, index) => {
+            const attributes =
+              (span.attributes as Record<string, unknown> | undefined) ?? {};
+            const answerId =
+              typeof attributes.answer_id === "string"
+                ? attributes.answer_id
+                : "";
+            return (
+              <div
+                className="trace-row"
+                key={`${String(span.span_id)}-${index}`}
+              >
+                <span
+                  className={`trace-dot ${span.status === "error" ? "error" : "ok"}`}
+                />
+                <div>
+                  <strong>{String(span.name)}</strong>
+                  <small>
+                    trace {String(span.trace_id).slice(0, 12)}… ·{" "}
+                    {String(span.duration_ms)} ms
+                  </small>
+                </div>
+                {answerId ? (
+                  <button
+                    className="text-button trace-audit-button"
+                    disabled={auditLoading === answerId}
+                    onClick={() => void loadAudit(answerId)}
+                  >
+                    <Network size={13} />
+                    {auditLoading === answerId ? "加载中" : "证据链"}
+                  </button>
+                ) : (
+                  <span className="trace-status">
+                    {span.status === "error" ? "异常" : "完成"}
+                  </span>
+                )}
               </div>
-              <span className="trace-status">
-                {span.status === "error" ? "异常" : "完成"}
-              </span>
-            </div>
-          ))}
+            );
+          })}
           {!data && <Loading />}
           {data && spans.length === 0 && (
             <Empty
@@ -1360,6 +1422,13 @@ function ObservabilityPage() {
           </div>
         </div>
       </div>
+      {auditError && (
+        <div className="alert error audit-alert">
+          <ShieldAlert size={16} />
+          {auditError}
+        </div>
+      )}
+      {auditTrail && <EvidenceChainView trail={auditTrail} />}
     </>
   );
 }

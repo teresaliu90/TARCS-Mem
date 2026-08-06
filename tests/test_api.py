@@ -89,6 +89,32 @@ def test_answer_audit_endpoint_hides_unknown_and_cross_tenant_ids(tmp_path):
     app.state.tarcsmem_service.close()
 
 
+def test_query_idempotency_replays_stable_answer_without_duplicate_lineage(tmp_path):
+    app = create_app(str(tmp_path / "query-idempotency.db"), api_key="")
+    app.state.tarcsmem_service.seed()
+    payload = {
+        "question": "2026年8月华南区销售折扣上限是多少？",
+        "as_of": "2026-08-15",
+        "tenant_id": "default",
+        "roles": [],
+    }
+    headers = {"Idempotency-Key": "query-request-0001"}
+    with TestClient(app) as client:
+        first = client.post("/v1/query", json=payload, headers=headers)
+        replay = client.post("/v1/query", json=payload, headers=headers)
+
+    assert first.status_code == replay.status_code == 200
+    assert replay.json() == first.json()
+    answer_id = first.json()["answer_id"]
+    events = app.state.tarcsmem_service.audit_trail(answer_id)
+    assert [event["event_type"] for event in events] == [
+        "query",
+        "evidence_pack_created",
+        "answer_finalized",
+    ]
+    app.state.tarcsmem_service.close()
+
+
 def test_api_returns_422_for_blocked_credential_ingestion(tmp_path):
     app = create_app(str(tmp_path / "security.db"), api_key="")
     payload = {

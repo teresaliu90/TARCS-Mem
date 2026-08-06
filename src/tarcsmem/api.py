@@ -426,9 +426,17 @@ def create_app(
         }
 
     @app.post("/v1/query")
-    def query(request: QueryRequest):
-        access = AccessContext.from_values(request.tenant_id, request.roles)
-        return service.query(request.question, request.as_of, access).to_dict()
+    def query(
+        request: QueryRequest,
+        idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
+    ):
+        def operation() -> dict[str, object]:
+            access = AccessContext.from_values(request.tenant_id, request.roles)
+            return service.query(request.question, request.as_of, access).to_dict()
+
+        return idempotency_response(
+            "/v1/query", idempotency_key, request.model_dump(), operation, 200
+        )
 
     def get_chat_agent():
         agent = app.state.tarcsmem_chat_agent

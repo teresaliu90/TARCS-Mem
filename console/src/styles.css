@@ -186,6 +186,9 @@ a { color: inherit; }
 .chain-evidence > div strong { font-size: 9px; }
 .chain-evidence small { color: #7d8983; font-size: 8px; }
 .chain-evidence p, .chain-empty { margin: 7px 0 5px; color: #526159; font-size: 8px; line-height: 1.5; }
+.chain-lineage { display: grid; gap: 5px; margin-top: 9px; padding-top: 8px; border-top: 1px dashed #dce3df; }
+.chain-lineage span { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; color: #6d7972; font-size: 8px; }
+.chain-lineage code { overflow-wrap: anywhere; color: #425048; font: 8px ui-monospace, SFMono-Regular, Menlo, monospace; text-align: right; }
 .chain-summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 10px; }
 .chain-summary-grid > div { padding: 10px; border-radius: 7px; background: #f3f6f4; }
 .chain-summary-grid p { margin: 5px 0 0; color: #69766f; font-size: 8px; line-height: 1.5; }
@@ -259,6 +262,7 @@ td small { margin-top: 4px; color: #8b9690; font-size: 8px; }
 .trace-row strong { font-size: 10px; }
 .trace-row small { color: #89938e; font: 8px ui-monospace, monospace; }
 .trace-status { color: #65736b; font-size: 9px; }
+.trace-audit-button { margin-left: auto; }
 .metrics-json { max-height: 330px; margin-top: 18px; }
 
 .integration-intro { display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 14px; margin-bottom: 15px; padding: 15px 18px; border: 1px solid #d4e4dc; border-radius: 8px; background: var(--green-50); }
