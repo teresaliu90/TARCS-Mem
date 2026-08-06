@@ -6,7 +6,7 @@
 ![Python 3.11 与 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776AB)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1f7a52.svg)](LICENSE)
 
-[English README](README.md) · [治理控制台](docs/CONSOLE.md) · [MCP 与 OpenAI 接入](docs/INTEGRATIONS.md) · [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md) · [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) · [社区版与企业服务边界](docs/COMMUNITY_AND_ENTERPRISE_CN.md) · [架构说明](docs/ARCHITECTURE.md) · [安全设计](docs/SECURITY.md) · [可观测性](docs/OBSERVABILITY.md) · [真实评测](docs/EVALUATION.md)
+[English README](README.md) · [治理控制台](docs/CONSOLE.md) · [MCP 与 OpenAI 接入](docs/INTEGRATIONS.md) · [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md) · [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) · [社区版与企业服务边界](docs/COMMUNITY_AND_ENTERPRISE_CN.md) · [架构说明](docs/ARCHITECTURE.md) · [治理流水线设计](docs/GOVERNANCE_PIPELINE_DESIGN.md) · [安全设计](docs/SECURITY.md) · [可观测性](docs/OBSERVABILITY.md) · [真实评测](docs/EVALUATION.md)
 
 ## 项目解决什么问题
 

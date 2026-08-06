@@ -6,7 +6,7 @@
 ![Python 3.11 and 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776AB)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1f7a52.svg)](LICENSE)
 
-[中文说明](README.zh-CN.md) · [Governance console](docs/CONSOLE.md) · [MCP & OpenAI integrations](docs/INTEGRATIONS.md) · [DeepSeek cloud setup (中文)](docs/DEEPSEEK_API_CN.md) · [Production deployment](docs/PRODUCTION_DEPLOYMENT.md) · [Community and enterprise direction](docs/COMMUNITY_AND_ENTERPRISE.md) · [Architecture](docs/ARCHITECTURE.md) · [Algorithm](docs/ALGORITHM.md)
+[中文说明](README.zh-CN.md) · [Governance console](docs/CONSOLE.md) · [MCP & OpenAI integrations](docs/INTEGRATIONS.md) · [DeepSeek cloud setup (中文)](docs/DEEPSEEK_API_CN.md) · [Production deployment](docs/PRODUCTION_DEPLOYMENT.md) · [Community and enterprise direction](docs/COMMUNITY_AND_ENTERPRISE.md) · [Architecture](docs/ARCHITECTURE.md) · [Governance pipeline design](docs/GOVERNANCE_PIPELINE_DESIGN.md) · [Algorithm](docs/ALGORITHM.md)
 
 TARCS-Mem answers a question that ordinary memory/RAG layers leave open: **which new facts may become active enterprise memory, and which evidence may be used to answer right now?**
 
@@ -68,7 +68,10 @@ User question -> hybrid retrieval -> RRF -> TARCS constraints/ranking
               evidence pack -> verification -> answer / clarify / abstain
 ```
 
-Read the formal choices in [docs/ALGORITHM.md](docs/ALGORITHM.md) and the component boundaries in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Read the formal choices in [docs/ALGORITHM.md](docs/ALGORITHM.md), the current component boundaries
+in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and the explicitly proposed post-v0.8 event,
+projection and configurable-pipeline design in
+[docs/GOVERNANCE_PIPELINE_DESIGN.md](docs/GOVERNANCE_PIPELINE_DESIGN.md).
 
 ## Try it in five minutes
 

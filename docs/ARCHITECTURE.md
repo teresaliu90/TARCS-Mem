@@ -4,6 +4,12 @@
 
 TARCS-Mem is a governance layer between memory ingestion/retrieval and an LLM Agent. It is intentionally independent of LangChain, LlamaIndex, a vector database, and a model provider. This permits it to be adopted as an adapter rather than a replacement for an existing RAG stack.
 
+This document describes the current v0.8 component boundaries. The
+[governance pipeline design](GOVERNANCE_PIPELINE_DESIGN.md) is the post-v0.8 target for versioned
+policy bundles, a tamper-evident audit envelope, rebuildable active-memory projections,
+answer-centric evidence chains and configurable retrieval plugins. Proposed interfaces in that
+document are not claims about current behavior.
+
 ## Write path: GuardWrite
 
 1. An upstream extractor creates a typed `MemoryRecord` with tenant, roles and classification.
