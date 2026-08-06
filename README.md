@@ -2,7 +2,7 @@
 
 > A production-oriented reference implementation of **trusted enterprise memory governance** for RAG and AI agents.
 
-[中文说明](README.zh-CN.md) · [MCP & OpenAI integrations](docs/INTEGRATIONS.md) · [DeepSeek cloud setup (中文)](docs/DEEPSEEK_API_CN.md) · [Production deployment](docs/PRODUCTION_DEPLOYMENT.md) · [Architecture](docs/ARCHITECTURE.md) · [Algorithm](docs/ALGORITHM.md) · [First GitHub upload (中文)](docs/GITHUB_FIRST_UPLOAD_CN.md)
+[中文说明](README.zh-CN.md) · [Governance console](docs/CONSOLE.md) · [MCP & OpenAI integrations](docs/INTEGRATIONS.md) · [DeepSeek cloud setup (中文)](docs/DEEPSEEK_API_CN.md) · [Production deployment](docs/PRODUCTION_DEPLOYMENT.md) · [Architecture](docs/ARCHITECTURE.md) · [Algorithm](docs/ALGORITHM.md)
 
 TARCS-Mem answers a question that ordinary memory/RAG layers leave open: **which new facts may become active enterprise memory, and which evidence may be used to answer right now?**
 
@@ -35,7 +35,8 @@ It is deliberately not another general-purpose chatbot. It is a reusable governa
 - **OpenAI-compatible gateway** – existing chat clients can use `/v1/chat/completions` while TARCS citation, time, access and egress controls remain enforced.
 - **LangChain and LlamaIndex adapters** – convert governed evidence into each framework's native retriever with one function call; neither adapter can read the unfiltered candidate pool.
 - **Incremental Confluence connector** – Confluence Cloud REST API v2 cursor pagination, version/hash checkpoints, deterministic retry-safe IDs, safe deletion handling and human-review defaults.
-- **Production-oriented delivery** – retry-safe write idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 90 tests, Python 3.11/3.12 CI, clean-wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
+- **Beginner-friendly governance console** – one FastAPI-served React workspace for health, safe query experiments, governed memories, named human review, privacy-safe traces and integrations.
+- **Production-oriented delivery** – retry-safe write idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 92 tests, Python 3.11/3.12 and Node CI, clean-wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
 
 `TARCS-Mem` is a reference implementation, not a claim of production certification. Request-body roles are demo inputs, not trusted identity claims. A real production deployment must bind tenant/roles from OIDC/SSO, externalize authorization policy, add encryption/key management, malware scanning, retention controls, SIEM export, backup/restore and load/red-team tests.
 
@@ -63,8 +64,8 @@ Read the formal choices in [docs/ALGORITHM.md](docs/ALGORITHM.md) and the compon
 Requires Python 3.11+.
 
 ```bash
-git clone https://github.com/<your-account>/tarcsmem.git
-cd tarcsmem
+git clone https://github.com/teresaliu90/TARCS-Mem.git
+cd TARCS-Mem
 python -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev,api]'
@@ -87,6 +88,11 @@ curl -X POST http://localhost:8000/v1/query \
   -H 'content-type: application/json' \
   -d '{"question":"2026年8月华南区销售折扣上限是多少？","as_of":"2026-08-15","tenant_id":"default","roles":[]}'
 ```
+
+Then open `http://127.0.0.1:8000/console/` for the v0.8 governance console. It uses
+the same protected API and needs no separate frontend process. If `TARCSMEM_API_KEY`
+is enabled, enter the token in **Integration center → Configure API Key**; it is kept
+only in the current browser tab. See [the console guide](docs/CONSOLE.md).
 
 Or run the API in a container:
 
@@ -250,6 +256,7 @@ For a portfolio-quality evaluation, combine the repository's synthetic governanc
 
 ```text
 src/tarcsmem/       core package
+console/            React/TypeScript console source
 tests/              unit and workflow tests
 docs/               architecture, algorithm, data and security notes
 examples/           copy-paste MCP and OpenAI-compatible integrations

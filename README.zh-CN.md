@@ -2,7 +2,7 @@
 
 > 面向 RAG 与 AI Agent 的企业可信记忆治理参考实现。
 
-[English README](README.md) · [MCP 与 OpenAI 接入](docs/INTEGRATIONS.md) · [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md) · [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) · [架构说明](docs/ARCHITECTURE.md) · [安全设计](docs/SECURITY.md) · [可观测性](docs/OBSERVABILITY.md) · [真实评测](docs/EVALUATION.md) · [首次上传 GitHub 指南](docs/GITHUB_FIRST_UPLOAD_CN.md)
+[English README](README.md) · [治理控制台](docs/CONSOLE.md) · [MCP 与 OpenAI 接入](docs/INTEGRATIONS.md) · [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md) · [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) · [架构说明](docs/ARCHITECTURE.md) · [安全设计](docs/SECURITY.md) · [可观测性](docs/OBSERVABILITY.md) · [真实评测](docs/EVALUATION.md)
 
 ## 项目解决什么问题
 
@@ -27,6 +27,7 @@ TARCS-Mem 在知识写入、检索和生成之间增加可解释的治理层：
 - **OpenAI 兼容网关**：现有聊天客户端可以调用 `/v1/chat/completions`，同时保留时间、权限、引用和云端出境治理。
 - **LangChain / LlamaIndex 一行式适配**：直接返回两个框架的原生 Retriever，且只能看到通过 GuardRead 的证据。
 - **Confluence 真实增量同步**：基于 Confluence Cloud REST API v2，支持游标分页、版本与内容哈希检查点、确定性幂等 ID、安全删除确认和默认人工审核。
+- **新手友好的治理控制台**：在一个页面体系中完成治理健康检查、安全问答演示、可信记忆查询、具名人工审核、隐私安全 Trace 和集成配置。
 
 ![TARCS-Mem 带来源与决策轨迹的可信回答](docs/demo/assets/02-answer-v07.jpg)
 
@@ -43,20 +44,22 @@ Python · FastAPI · Qwen3 / Ollama · BGE · Qdrant · SQLite · Gradio · Dock
 
 核心治理算法不依赖模型或向量数据库；Qwen3、BGE 与 Qdrant 是可替换的本地适配器。
 
-## 5 分钟运行界面
+## 5 分钟运行治理控制台
 
 需要 Python 3.11+：
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -e '.[ui,dev,api]'
+pip install -e '.[dev,api]'
 
-export TARCSMEM_SECURITY_MODE=redact
-tarcsmem ui --db ./data/tarcsmem-demo.db
+tarcsmem seed --db ./data/tarcsmem-demo.db --if-empty
+tarcsmem serve --db ./data/tarcsmem-demo.db --port 8000
 ```
 
-浏览器打开 `http://127.0.0.1:7860`。默认配置使用 Hash 检索和本地确定性证据渲染器，不需要下载 BGE、不需要 API Key，也不需要启动 Ollama。渲染器不是大模型，不负责推理；它让任何人先完整体验写入治理、检索、拒答、引用与审计流程。也可以切换 DeepSeek 云端生成，或按 [docs/LOCAL_AGENT.md](docs/LOCAL_AGENT.md) 启用完整本地 Agent（Qwen3 + BGE + Qdrant）。
+浏览器打开 `http://127.0.0.1:8000/console/`。控制台与 FastAPI 使用同一服务，不需要单独运行前端。可以直接查看治理健康、安全测试场、可信记忆、人工审核、Trace 和集成状态。启用 `TARCSMEM_API_KEY` 后，在“集成中心 → 配置 API Key”填写令牌；令牌只保存在当前浏览器标签页。详细说明见 [治理控制台指南](docs/CONSOLE.md)。
+
+原有 Gradio 对话演示仍可通过 `pip install -e '.[ui,dev]'` 和 `tarcsmem ui --db ./data/tarcsmem-demo.db` 启动，默认地址为 `http://127.0.0.1:7860`。它适合体验文档上传与本地/云端 Agent；v0.8 控制台更适合治理人员和试点演示。
 
 ## 接入已有 Agent 与聊天工具
 
@@ -127,7 +130,7 @@ tarcsmem evaluate-public --queries 120 --distractors 300 \
   --output docs/benchmarks/fiqa-public-report.json
 ```
 
-当前自动化测试共 **90 项**，覆盖治理、安全、ACL、API、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、限流、幂等写入、检索回归、可观测性和评测代码。CI 同时验证 Python 3.11/3.12、可选依赖、Docker 构建，并从 wheel 在全新环境中执行 CLI 冒烟测试。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
+当前自动化测试共 **92 项**，覆盖治理、安全、ACL、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、限流、幂等写入、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、可选依赖、Docker 构建，并从 wheel 在全新环境中执行 CLI 冒烟测试。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
 
 经验证的 85 秒 v0.7 中文演示视频和逐秒脚本见 [docs/demo](docs/demo/)。
 
@@ -135,6 +138,7 @@ tarcsmem evaluate-public --queries 120 --distractors 300 \
 
 ```text
 src/tarcsmem/       核心治理、检索、Agent、API 与 UI
+console/            React / TypeScript 治理控制台源码
 tests/              单元测试与治理工作流测试
 docs/               架构、算法、数据集、安全与运行说明
 examples/           可复制的 MCP 与 OpenAI 兼容接入示例

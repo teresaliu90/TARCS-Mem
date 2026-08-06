@@ -6,12 +6,13 @@ import re
 from collections import defaultdict, deque
 from dataclasses import dataclass
 from datetime import UTC, date, datetime
+from pathlib import Path
 from threading import RLock
 from time import monotonic, time
 from uuid import uuid4
 
 from . import __version__
-from .models import AccessContext, MemoryRecord
+from .models import AccessContext, MemoryRecord, MemoryStatus
 from .service import TARCSMemoryService
 
 _IDEMPOTENCY_KEY = re.compile(r"^[A-Za-z0-9_-]{8,128}$")
@@ -71,8 +72,9 @@ def create_app(
     runtime_policy: ApiRuntimePolicy | None = None,
 ):
     try:
-        from fastapi import FastAPI, Header, HTTPException, Request, Response
-        from fastapi.responses import JSONResponse
+        from fastapi import FastAPI, Header, HTTPException, Query, Request, Response
+        from fastapi.responses import FileResponse, JSONResponse
+        from fastapi.staticfiles import StaticFiles
         from pydantic import BaseModel, Field
     except ImportError as exc:  # pragma: no cover
         raise RuntimeError("Install API extras: pip install -e '.[api]'") from exc
@@ -93,7 +95,10 @@ def create_app(
         request_id = request.headers.get("x-request-id", "")
         request_id = request_id if _REQUEST_ID.fullmatch(request_id) else uuid4().hex
         is_public_liveness = request.url.path == "/healthz"
-        if configured_key and not is_public_liveness:
+        is_public_console_asset = request.url.path == "/console" or request.url.path.startswith(
+            "/console/"
+        )
+        if configured_key and not (is_public_liveness or is_public_console_asset):
             authorization = request.headers.get("authorization", "")
             supplied = (
                 authorization.removeprefix("Bearer ") if authorization.startswith("Bearer ") else ""
@@ -104,7 +109,7 @@ def create_app(
                 )
                 response.headers["X-Request-ID"] = request_id
                 return response
-        if not is_public_liveness:
+        if not (is_public_liveness or is_public_console_asset):
             client_key = request.client.host if request.client else "unknown"
             allowed, retry_after = limiter.allow(client_key)
             if not allowed:
@@ -231,6 +236,193 @@ def create_app(
             )
         except (TypeError, ValueError) as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    @app.get("/v1/memories")
+    def list_memories(
+        status: MemoryStatus | None = None,
+        classification: str | None = None,
+        tenant_id: str | None = None,
+        search: str | None = None,
+        limit: int = Query(default=50, ge=1, le=200),
+        offset: int = Query(default=0, ge=0),
+    ):
+        """List governed memory projections for the authenticated admin console."""
+        records = sorted(service.store.list_all(), key=lambda item: item.observed_at, reverse=True)
+        if status is not None:
+            records = [record for record in records if record.status is status]
+        if classification:
+            normalized_classification = classification.strip().lower()
+            if normalized_classification not in {
+                "public",
+                "internal",
+                "confidential",
+                "restricted",
+            }:
+                raise HTTPException(status_code=422, detail="unsupported classification")
+            records = [
+                record for record in records if record.classification == normalized_classification
+            ]
+        if tenant_id:
+            records = [record for record in records if record.tenant_id == tenant_id.strip()]
+        if search:
+            normalized_search = search.strip().casefold()
+            records = [
+                record
+                for record in records
+                if normalized_search
+                in f"{record.fact} {record.source_ref} {record.conflict_key} {record.id}".casefold()
+            ]
+        total = len(records)
+        page = records[offset : offset + limit]
+        return {
+            "items": [record.to_dict() for record in page],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        }
+
+    @app.get("/v1/memories/{record_id}")
+    def memory_detail(record_id: str):
+        record = service.store.get(record_id)
+        if record is None:
+            raise HTTPException(status_code=404, detail="memory record not found")
+        related = [
+            item.to_dict()
+            for item in service.store.by_conflict_key(record.conflict_key, record.tenant_id)
+            if item.id != record.id
+        ]
+        return {
+            "memory": record.to_dict(),
+            "related_versions": related,
+            "events": service.audit_trail(record.id),
+        }
+
+    @app.get("/v1/console/overview")
+    def console_overview():
+        records = service.store.list_all()
+        counts = {status.value: 0 for status in MemoryStatus}
+        classifications = {
+            "public": 0,
+            "internal": 0,
+            "confidential": 0,
+            "restricted": 0,
+        }
+        for record in records:
+            counts[record.status.value] += 1
+            classifications[record.classification] += 1
+
+        active_keys = {
+            (record.tenant_id, record.conflict_key)
+            for record in records
+            if record.status is MemoryStatus.VERIFIED_ACTIVE
+        }
+        pending = [record for record in records if record.status is MemoryStatus.PENDING]
+        conflicts = [
+            record for record in pending if (record.tenant_id, record.conflict_key) in active_keys
+        ]
+        now = datetime.now(tz=UTC).date()
+        expiring = [
+            record
+            for record in records
+            if record.status is MemoryStatus.VERIFIED_ACTIVE
+            and record.valid_to is not None
+            and 0 <= (record.valid_to - now).days <= 30
+        ]
+        issues = [
+            {
+                "id": record.id,
+                "kind": "conflict" if record in conflicts else "review",
+                "severity": "high" if record in conflicts else "medium",
+                "title": (
+                    "候选记忆与现行版本冲突" if record in conflicts else "候选记忆等待人工审核"
+                ),
+                "source_ref": record.source_ref,
+                "conflict_key": record.conflict_key,
+                "observed_at": record.observed_at.isoformat(),
+            }
+            for record in sorted(pending, key=lambda item: item.observed_at, reverse=True)[:8]
+        ]
+        return {
+            "version": __version__,
+            "total_memories": len(records),
+            "status_counts": counts,
+            "classification_counts": classifications,
+            "review_queue": len(pending),
+            "active_conflicts": len(conflicts),
+            "expiring_soon": len(expiring),
+            "issues": issues,
+            "privacy": "控制台不采集原始问题、密钥或未授权文档正文",
+        }
+
+    @app.get("/v1/console/integrations")
+    def console_integrations():
+        docs_base = "https://github.com/teresaliu90/TARCS-Mem/blob/main/docs"
+        configured = {
+            "qdrant": bool(os.getenv("TARCSMEM_QDRANT_URL")),
+            "deepseek": bool(os.getenv("DEEPSEEK_API_KEY")),
+            "confluence": all(
+                os.getenv(name)
+                for name in (
+                    "TARCSMEM_CONFLUENCE_BASE_URL",
+                    "TARCSMEM_CONFLUENCE_EMAIL",
+                    "TARCSMEM_CONFLUENCE_API_TOKEN",
+                    "TARCSMEM_CONFLUENCE_SPACE_ID",
+                )
+            ),
+        }
+        return {
+            "items": [
+                {
+                    "id": "openai",
+                    "name": "OpenAI-compatible API",
+                    "category": "Agent 接入",
+                    "status": "ready",
+                    "description": "现有聊天客户端可直接接入受治理的非流式网关。",
+                    "docs": f"{docs_base}/INTEGRATIONS.md",
+                },
+                {
+                    "id": "mcp",
+                    "name": "MCP v2",
+                    "category": "Agent 接入",
+                    "status": "ready",
+                    "description": "Agent 可检索可信记忆并提交无法自我提升的候选事实。",
+                    "docs": f"{docs_base}/INTEGRATIONS.md",
+                },
+                {
+                    "id": "qdrant",
+                    "name": "Qdrant",
+                    "category": "检索",
+                    "status": "connected" if configured["qdrant"] else "configure",
+                    "description": "向量候选在权限、状态与业务时间过滤后参与排序。",
+                    "docs": f"{docs_base}/LOCAL_AGENT.md",
+                },
+                {
+                    "id": "confluence",
+                    "name": "Confluence Cloud",
+                    "category": "数据源",
+                    "status": "connected" if configured["confluence"] else "configure",
+                    "description": "增量同步页面版本，默认以低权威来源进入审核。",
+                    "docs": f"{docs_base}/INTEGRATIONS.md",
+                },
+                {
+                    "id": "deepseek",
+                    "name": "DeepSeek",
+                    "category": "模型",
+                    "status": "connected" if configured["deepseek"] else "configure",
+                    "description": "仅在证据分类通过云端出境策略后执行生成。",
+                    "docs": f"{docs_base}/DEEPSEEK_API_CN.md",
+                },
+                {
+                    "id": "frameworks",
+                    "name": "LangChain / LlamaIndex",
+                    "category": "框架",
+                    "status": "ready",
+                    "description": "原生 Retriever 只返回通过治理边界的证据。",
+                    "docs": f"{docs_base}/INTEGRATIONS.md",
+                },
+            ],
+            "secrets_exposed": False,
+        }
 
     @app.post("/v1/query")
     def query(request: QueryRequest):
@@ -400,5 +592,22 @@ def create_app(
             message = str(exc)
             status_code = 404 if message == "memory record not found" else 409
             raise HTTPException(status_code=status_code, detail=message) from exc
+
+    console_directory = Path(__file__).with_name("console_dist")
+    console_index = console_directory / "index.html"
+    console_assets = console_directory / "assets"
+    if console_index.is_file():
+        if console_assets.is_dir():
+            app.mount(
+                "/console/assets",
+                StaticFiles(directory=console_assets),
+                name="console-assets",
+            )
+
+        @app.get("/console", include_in_schema=False)
+        @app.get("/console/{path:path}", include_in_schema=False)
+        def console_app(path: str = ""):
+            del path
+            return FileResponse(console_index)
 
     return app

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tarcsmem"
-version = "0.7.0"
+version = "0.8.0"
 description = "Trusted enterprise memory governance for RAG and AI agents"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -39,6 +39,9 @@ tarcsmem-mcp = "tarcsmem.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+tarcsmem = ["console_dist/**/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

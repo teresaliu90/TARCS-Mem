@@ -209,3 +209,45 @@ def test_api_rate_limit_rejects_excess_requests_with_retry_hint(tmp_path):
     metrics = app.state.tarcsmem_service.observability.metrics.prometheus_text()
     assert "tarcsmem_api_rate_limit_total" in metrics
     app.state.tarcsmem_service.close()
+
+
+def test_console_overview_and_memory_filters_expose_governance_state(tmp_path):
+    app = create_app(str(tmp_path / "console.db"), api_key="console-token")
+    app.state.tarcsmem_service.seed()
+    headers = {"Authorization": "Bearer console-token"}
+    with TestClient(app) as client:
+        overview = client.get("/v1/console/overview", headers=headers)
+        memories = client.get(
+            "/v1/memories",
+            params={"status": "pending", "search": "折扣"},
+            headers=headers,
+        )
+        detail = client.get("/v1/memories/sales-meeting-note", headers=headers)
+        integrations = client.get("/v1/console/integrations", headers=headers)
+        console = client.get("/console")
+    assert overview.status_code == 200
+    assert overview.json()["review_queue"] == 2
+    assert overview.json()["active_conflicts"] == 1
+    assert memories.status_code == 200
+    assert memories.json()["total"] == 1
+    assert memories.json()["items"][0]["source_ref"] == "MEETING-2026-06-18#4"
+    assert detail.status_code == 200
+    assert detail.json()["memory"]["id"] == "sales-meeting-note"
+    assert detail.json()["events"]
+    assert integrations.status_code == 200
+    assert integrations.json()["secrets_exposed"] is False
+    assert console.status_code == 200
+    assert "TARCS-Mem" in console.text
+    app.state.tarcsmem_service.close()
+
+
+def test_console_assets_are_public_but_governance_data_requires_auth(tmp_path):
+    app = create_app(str(tmp_path / "console-auth.db"), api_key="console-token")
+    with TestClient(app) as client:
+        assert client.get("/v1/console/overview").status_code == 401
+        console = client.get("/console")
+        assert console.status_code == 200
+        asset_path = console.text.split('src="')[1].split('"')[0]
+        assert asset_path.startswith("/console/assets/")
+        assert client.get(asset_path).status_code == 200
+    app.state.tarcsmem_service.close()

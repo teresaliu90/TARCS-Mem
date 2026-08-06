@@ -8,6 +8,8 @@ __pycache__/
 build/
 dist/
 *.egg-info/
+node_modules/
+*.tsbuildinfo
 .env
 data/*.db
 data/*.sqlite*

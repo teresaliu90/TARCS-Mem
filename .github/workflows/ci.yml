@@ -5,6 +5,25 @@ on:
   pull_request:
 
 jobs:
+  console:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: console/package-lock.json
+      - run: npm ci
+        working-directory: console
+      - run: npm run typecheck
+        working-directory: console
+      - run: npm run format:check
+        working-directory: console
+      - run: npm run build
+        working-directory: console
+      - run: git diff --exit-code -- src/tarcsmem/console_dist
+
   test:
     strategy:
       matrix:

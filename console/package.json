@@ -1,0 +1,27 @@
+{
+  "name": "tarcsmem-console",
+  "private": true,
+  "version": "0.8.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" vite.config.ts",
+    "preview": "vite preview",
+    "typecheck": "tsc -b --pretty false"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "lucide-react": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "vite": "latest"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "prettier": "^3.9.6",
+    "typescript": "latest"
+  }
+}

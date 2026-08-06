@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.0 - 2026-08-06
+
+- Added a beginner-friendly React governance console served directly by FastAPI at `/console/`.
+- Added a governance health overview, governed query sandbox, searchable memory inventory, human review workspace, privacy-safe trace view and integration center.
+- Added console APIs for filtered memory inventory, version/audit detail, health summaries and secret-free integration status.
+- Added session-only Bearer token configuration so protected pilots can use the console without persisting credentials.
+- Packaged the compiled console inside the Python wheel and added deterministic TypeScript/build checks to CI.
+- Expanded the API suite to 92 tests, including protection of governance data while static console assets remain publicly loadable.
+
 ## 0.7.0 - 2026-08-06
 
 - Added an official MCP Python SDK v2 server with governed search, a governance resource and a fail-safe proposal tool that cannot auto-activate agent-authored claims.
