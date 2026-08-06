@@ -30,7 +30,7 @@ jobs:
           cp docs/demo/tarcsmem-v0.7-demo.mp4 dist/tarcsmem-demo.mp4
           cd dist
           sha256sum * > SHA256SUMS.txt
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           body_path: docs/releases/${{ github.ref_name }}.md
           files: dist/*
