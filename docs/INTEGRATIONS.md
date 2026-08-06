@@ -77,7 +77,7 @@ curl http://127.0.0.1:8000/v1/chat/completions \
 
 The standard `choices` and `usage` fields are present. An additive `tarcsmem`
 field carries outcome, citations, decision trace and observability metadata.
-Streaming is intentionally unsupported in v0.7 so the complete generated answer
+Streaming is intentionally unsupported so the complete generated answer
 can pass citation verification before any bytes cross the response boundary.
 
 Client-supplied system messages are counted but ignored. Only the server-owned

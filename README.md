@@ -1,6 +1,10 @@
 # TARCS-Mem
 
-> A production-oriented reference implementation of **trusted enterprise memory governance** for RAG and AI agents.
+> The open-source trust layer for enterprise RAG and AI agents.
+
+[![CI](https://github.com/teresaliu90/TARCS-Mem/actions/workflows/ci.yml/badge.svg)](https://github.com/teresaliu90/TARCS-Mem/actions/workflows/ci.yml)
+![Python 3.11 and 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776AB)
+[![License: MIT](https://img.shields.io/badge/license-MIT-1f7a52.svg)](LICENSE)
 
 [中文说明](README.zh-CN.md) · [Governance console](docs/CONSOLE.md) · [MCP & OpenAI integrations](docs/INTEGRATIONS.md) · [DeepSeek cloud setup (中文)](docs/DEEPSEEK_API_CN.md) · [Production deployment](docs/PRODUCTION_DEPLOYMENT.md) · [Architecture](docs/ARCHITECTURE.md) · [Algorithm](docs/ALGORITHM.md)
 
@@ -17,7 +21,14 @@ It is deliberately not another general-purpose chatbot. It is a reusable governa
 | overwrites or ignores conflicting versions | preserves history and requires explainable supersession |
 | asks the model to cite | blocks missing/invented citations and unauthorized cloud egress |
 
-## What is implemented
+### Who is it for?
+
+- Enterprise AI and platform engineers building governed RAG or Agent systems.
+- Knowledge owners who need visible version, review and audit workflows.
+- AI security and compliance teams evaluating evidence, access and cloud-egress controls.
+- Integrators who want a provider-neutral governance layer instead of another chatbot builder.
+
+## What is implemented in v0.8
 
 - **GuardWrite** – admission policy for automatic memory writes; source provenance, evidence completeness, confidence and durable value decide `verified_active`, `pending`, or `rejected`.
 - **Version and conflict governance** – append-only audit events; new authoritative records supersede older active records instead of overwriting them. Equal-authority conflicts remain pending for human review.
@@ -59,7 +70,7 @@ User question -> hybrid retrieval -> RRF -> TARCS constraints/ranking
 
 Read the formal choices in [docs/ALGORITHM.md](docs/ALGORITHM.md) and the component boundaries in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Quick start
+## Try it in five minutes
 
 Requires Python 3.11+.
 
@@ -68,31 +79,53 @@ git clone https://github.com/teresaliu90/TARCS-Mem.git
 cd TARCS-Mem
 python -m venv .venv
 source .venv/bin/activate
-pip install -e '.[dev,api]'
+pip install -e '.[api]'
+tarcsmem seed --db ./data/tarcsmem-demo.db --if-empty
+tarcsmem serve --db ./data/tarcsmem-demo.db --port 8000
+```
 
-# load deterministic synthetic records and run the benchmark
-tarcsmem seed --db ./data/tarcsmem.db
-tarcsmem evaluate --db ./data/tarcsmem.db
+Open `http://127.0.0.1:8000/console/` and run the **Policy version** scenario.
+The first experience uses six synthetic records and needs no model API key, model download
+or vector database.
 
-# inspect a grounded response at a business date
-tarcsmem ask --db ./data/tarcsmem.db \
+You can also inspect the same governed answer from the command line:
+
+```bash
+tarcsmem ask --db ./data/tarcsmem-demo.db \
   --question '2026年8月华南区销售折扣上限是多少？' \
   --as-of 2026-08-15
 ```
 
-Start an API server:
-
-```bash
-tarcsmem serve --db ./data/tarcsmem.db --host 0.0.0.0 --port 8000
-curl -X POST http://localhost:8000/v1/query \
-  -H 'content-type: application/json' \
-  -d '{"question":"2026年8月华南区销售折扣上限是多少？","as_of":"2026-08-15","tenant_id":"default","roles":[]}'
-```
-
-Then open `http://127.0.0.1:8000/console/` for the v0.8 governance console. It uses
-the same protected API and needs no separate frontend process. If `TARCSMEM_API_KEY`
+The v0.8 console uses the same API and needs no separate frontend process. If `TARCSMEM_API_KEY`
 is enabled, enter the token in **Integration center → Configure API Key**; it is kept
 only in the current browser tab. See [the console guide](docs/CONSOLE.md).
+
+### Minimal Python example
+
+```python
+from datetime import date
+
+from tarcsmem import TARCSMemoryService
+from tarcsmem.models import MemoryRecord, SourceType
+
+memory = TARCSMemoryService(":memory:")
+try:
+    memory.ingest(
+        MemoryRecord(
+            fact="Expense claims above $5,000 require finance approval.",
+            source_type=SourceType.OFFICIAL_POLICY,
+            source_ref="FIN-POLICY-2026#12",
+            authority=1.0,
+            conflict_key="expense-approval-limit",
+            valid_from=date(2026, 1, 1),
+            evidence=["FIN-POLICY-2026#12"],
+        )
+    )
+    result = memory.query("When is finance approval required?", date(2026, 8, 1))
+    print(result.outcome, result.answer, result.citations)
+finally:
+    memory.close()
+```
 
 Or run the API in a container:
 
@@ -110,6 +143,22 @@ curl -X POST http://localhost:8000/v1/chat \
 ```
 
 The API accepts tenant and role fields only as local-demo inputs. Put it behind OIDC/SSO and inject verified claims before production. The full pilot-to-production checklist is in [docs/PRODUCTION_DEPLOYMENT.md](docs/PRODUCTION_DEPLOYMENT.md).
+
+## Ecosystem and integrations
+
+| Integration | Status | Governance boundary |
+| --- | --- | --- |
+| MCP v2 / Claude-compatible MCP hosts | Ready | Agent proposals cannot self-promote |
+| OpenAI-compatible clients | Ready | Non-streaming so citation verification can fail closed |
+| DeepSeek | Ready | `confidential` and `restricted` evidence is blocked by default |
+| LangChain / LlamaIndex | Ready | Native retrievers receive governed evidence only |
+| Qdrant | Ready | Vector candidates remain subject to hard policy filters |
+| Confluence Cloud | Ready | Incremental imports default to human review |
+| Notion / SharePoint / pgvector | Roadmap | Community contributors wanted |
+
+Claude and other compatible hosts connect through MCP; TARCS-Mem does not currently claim a
+native Anthropic generation adapter. See [the integration guide](docs/INTEGRATIONS.md) for
+copy-paste configuration and explicit security boundaries.
 
 ### Connect existing agent and chat tools
 
@@ -199,6 +248,12 @@ See
 
 The project also contains a complete local Agent path: Ollama/Qwen3 for dialogue, BGE-M3 embeddings, BGE reranking, Qdrant vector search, document upload, cited answers, a public SEC EDGAR connector, and a Gradio interface. Follow [docs/LOCAL_AGENT.md](docs/LOCAL_AGENT.md). It runs without a paid model API, but needs local model downloads and suitable hardware.
 
+## Use cases
+
+- **Enterprise policy assistants** — prevent superseded policies, meeting notes or unauthorized documents from silently becoming the answer.
+- **Financial and quantitative research governance** — retain source provenance, observation time, classification and supersession history. TARCS-Mem does not provide investment advice; dataset licenses still apply.
+- **Research knowledge bases** — separate hypotheses, observations and approved findings, and abstain while evidence remains unresolved.
+
 ## Example result
 
 ```json
@@ -248,7 +303,7 @@ The checked-in real-data report now uses **120 FiQA test queries and 610 candida
 
 Core regression tests additionally cover zero-overlap RRF pollution, relevance filtering before token budgeting, true greedy document-only MMR, and candidate oversampling before ACL/status/time filtering. These tests do not retroactively claim a higher FiQA score.
 
-A verified 85-second v0.7 Chinese demo video and timed narration script are available under [docs/demo](docs/demo/).
+A verified legacy v0.7 Chinese walkthrough and timed narration script remain available under [docs/demo](docs/demo/); the current product surface is the v0.8 governance console.
 
 For a portfolio-quality evaluation, combine the repository's synthetic governance scenarios with LongMemEval (memory), FinQA (financial document/table reasoning), and optionally BIRD Mini-Dev (Text-to-SQL). The exact source links, intended use and non-redistribution rule are in [docs/DATASET.md](docs/DATASET.md).
 
@@ -264,19 +319,24 @@ examples/           copy-paste MCP and OpenAI-compatible integrations
 Dockerfile          local API image
 ```
 
+## Contributing
+
+You do not need to understand the complete TARCS algorithm before contributing. We welcome:
+
+- documentation, examples, translations and accessibility improvements;
+- React console and UI polish;
+- data-source connectors and synthetic test fixtures;
+- TypeScript/Go SDK work, deployment templates and evaluation tools.
+
+Start with [`good first issue`](https://github.com/teresaliu90/TARCS-Mem/labels/good%20first%20issue)
+or [`help wanted`](https://github.com/teresaliu90/TARCS-Mem/labels/help%20wanted), then read
+[`CONTRIBUTING.md`](CONTRIBUTING.md). Changes to admission, ACL, conflict, citation or cloud-egress
+semantics require an explicit threat model and adversarial tests.
+
 ## Roadmap
 
-- [ ] Pluggable vector DB adapters (pgvector/Qdrant)
-- [x] MCP v2 stdio server with governed search and fail-safe proposals
-- [x] OpenAI-compatible non-streaming chat-completions facade
-- [x] Native LangChain and LlamaIndex governed retrievers
-- [x] Confluence Cloud REST API v2 incremental connector
-- [x] Built-in privacy-safe traces and Prometheus metrics
-- [x] Tenant-aware retrieval and document-level role ACL filtering
-- [ ] OIDC/SSO-derived claims, external Casbin/OPA policy and OTLP export
-- [x] Human-review queue/UI for pending memories with an auditable approve/reject decision
-- [ ] Learned TARCS ranker trained on adjudicated labels
-- [ ] Optional GraphRAG adapter only for demonstrated multi-hop entity queries
+The next six months focus on faster onboarding, connector contracts, TypeScript SDK support,
+design-partner evidence and production-readiness verification. See [`ROADMAP.md`](ROADMAP.md).
 
 ## License
 

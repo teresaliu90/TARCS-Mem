@@ -1,6 +1,10 @@
 # TARCS-Mem
 
-> 面向 RAG 与 AI Agent 的企业可信记忆治理参考实现。
+> 面向企业 RAG 与 AI Agent 的开源可信记忆治理层。
+
+[![CI](https://github.com/teresaliu90/TARCS-Mem/actions/workflows/ci.yml/badge.svg)](https://github.com/teresaliu90/TARCS-Mem/actions/workflows/ci.yml)
+![Python 3.11 与 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776AB)
+[![License: MIT](https://img.shields.io/badge/license-MIT-1f7a52.svg)](LICENSE)
 
 [English README](README.md) · [治理控制台](docs/CONSOLE.md) · [MCP 与 OpenAI 接入](docs/INTEGRATIONS.md) · [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md) · [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) · [架构说明](docs/ARCHITECTURE.md) · [安全设计](docs/SECURITY.md) · [可观测性](docs/OBSERVABILITY.md) · [真实评测](docs/EVALUATION.md)
 
@@ -38,6 +42,13 @@ TARCS-Mem 在知识写入、检索和生成之间增加可解释的治理层：
 | 覆盖旧版本或忽略冲突 | 保留历史并解释新版本为何替代旧版本 |
 | 仅提示模型添加引用 | 拦截缺失/编造引用和未授权云端出境 |
 
+### 适合谁
+
+- 正在建设企业 RAG、Agent 或知识库平台的 AI 工程师；
+- 需要管理制度版本、人工审核和审计记录的知识负责人；
+- 关注权限、数据分级、引用和云端出境的安全/合规团队；
+- 希望在现有技术栈前增加治理层，而不是更换为另一套聊天机器人的集成商。
+
 ## 技术栈
 
 Python · FastAPI · Qwen3 / Ollama · BGE · Qdrant · SQLite · Gradio · Docker · Pytest
@@ -49,6 +60,8 @@ Python · FastAPI · Qwen3 / Ollama · BGE · Qdrant · SQLite · Gradio · Dock
 需要 Python 3.11+：
 
 ```bash
+git clone https://github.com/teresaliu90/TARCS-Mem.git
+cd TARCS-Mem
 python -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev,api]'
@@ -59,9 +72,52 @@ tarcsmem serve --db ./data/tarcsmem-demo.db --port 8000
 
 浏览器打开 `http://127.0.0.1:8000/console/`。控制台与 FastAPI 使用同一服务，不需要单独运行前端。可以直接查看治理健康、安全测试场、可信记忆、人工审核、Trace 和集成状态。启用 `TARCSMEM_API_KEY` 后，在“集成中心 → 配置 API Key”填写令牌；令牌只保存在当前浏览器标签页。详细说明见 [治理控制台指南](docs/CONSOLE.md)。
 
+第一次体验只使用 6 条合成记录，不需要模型 API Key、模型下载或向量数据库。
+
+### 最小 Python 示例
+
+```python
+from datetime import date
+
+from tarcsmem import TARCSMemoryService
+from tarcsmem.models import MemoryRecord, SourceType
+
+memory = TARCSMemoryService(":memory:")
+try:
+    memory.ingest(
+        MemoryRecord(
+            fact="超过 5 万元的费用报销必须经过财务审批。",
+            source_type=SourceType.OFFICIAL_POLICY,
+            source_ref="FIN-POLICY-2026#12",
+            authority=1.0,
+            conflict_key="expense-approval-limit",
+            valid_from=date(2026, 1, 1),
+            evidence=["FIN-POLICY-2026#12"],
+        )
+    )
+    result = memory.query("什么情况下需要财务审批？", date(2026, 8, 1))
+    print(result.outcome, result.answer, result.citations)
+finally:
+    memory.close()
+```
+
 原有 Gradio 对话演示仍可通过 `pip install -e '.[ui,dev]'` 和 `tarcsmem ui --db ./data/tarcsmem-demo.db` 启动，默认地址为 `http://127.0.0.1:7860`。它适合体验文档上传与本地/云端 Agent；v0.8 控制台更适合治理人员和试点演示。
 
-## 接入已有 Agent 与聊天工具
+## 生态与集成
+
+| 集成 | 状态 | 治理边界 |
+| --- | --- | --- |
+| MCP v2 / Claude-compatible MCP Host | 可用 | Agent 提议不能自行晋升为正式制度 |
+| OpenAI-compatible 客户端 | 可用 | 非流式返回，完整答案先通过引用校验 |
+| DeepSeek | 可用 | 默认禁止机密和受限证据出境 |
+| LangChain / LlamaIndex | 可用 | 原生 Retriever 只接收合格证据 |
+| Qdrant | 可用 | 向量候选仍经过权限、状态和时间过滤 |
+| Confluence Cloud | 可用 | 增量导入默认进入人工审核 |
+| Notion / SharePoint / pgvector | 路线图 | 欢迎社区贡献 |
+
+Claude 等兼容 Host 通过 MCP 接入；当前项目不宣称已经实现原生 Anthropic 生成适配器。
+
+### 接入已有 Agent 与聊天工具
 
 作为 MCP v2 stdio 服务运行：
 
@@ -132,7 +188,13 @@ tarcsmem evaluate-public --queries 120 --distractors 300 \
 
 当前自动化测试共 **92 项**，覆盖治理、安全、ACL、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、限流、幂等写入、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、可选依赖、Docker 构建，并从 wheel 在全新环境中执行 CLI 冒烟测试。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
 
-经验证的 85 秒 v0.7 中文演示视频和逐秒脚本见 [docs/demo](docs/demo/)。
+经验证的旧版 v0.7 中文演示和逐秒脚本保留在 [docs/demo](docs/demo/)；当前产品界面为 v0.8 治理控制台。
+
+## 典型场景
+
+- **企业制度与知识库治理**：避免旧制度、会议纪要或未授权文档静默成为回答依据。
+- **金融/量化研究文档治理**：保留来源、观察时间、数据分级和版本替代记录。项目不提供投资建议，数据许可证仍然适用。
+- **科研项目知识库治理**：区分假设、观察结果和已批准结论，在证据冲突期间明确拒答。
 
 ## 项目结构
 
@@ -148,6 +210,23 @@ examples/           可复制的 MCP 与 OpenAI 兼容接入示例
 ## 安全边界
 
 这是作品集 / 开源 Alpha 参考实现，不是已通过企业生产认证的产品。仓库已实现确定性的安全基线，但请求体里的角色仅用于本地演示，不能代替可信身份声明。生产环境仍需由 OIDC/SSO 注入不可伪造的租户和角色，接入 Casbin/OPA、企业 DLP/Presidio、KMS、恶意文件扫描、限流、备份恢复、SIEM 和保留/删除流程。可按 [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) 从受控试点推进。
+
+## 欢迎参与贡献
+
+不需要先理解完整 TARCS 算法也能参与：
+
+- 文档、教程、翻译、无障碍和视觉改进；
+- React 控制台与 UI polish；
+- 数据源连接器和纯合成测试 fixture；
+- TypeScript/Go SDK、部署模板和评测工具。
+
+可从 [`good first issue`](https://github.com/teresaliu90/TARCS-Mem/labels/good%20first%20issue)
+或 [`help wanted`](https://github.com/teresaliu90/TARCS-Mem/labels/help%20wanted) 开始，并先阅读
+[`CONTRIBUTING.md`](CONTRIBUTING.md)。涉及写入准入、ACL、冲突、引用或云端出境的修改必须说明威胁模型并增加对抗测试。
+
+## 路线图
+
+未来六个月优先改善上手体验、连接器契约、TypeScript SDK、Design Partner 试点证据和生产准备验证，详见 [`ROADMAP.md`](ROADMAP.md)。
 
 ## 许可证
 

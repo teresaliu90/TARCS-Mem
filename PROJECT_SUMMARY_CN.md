@@ -2,7 +2,7 @@
 
 ## 这是什么
 
-TARCS-Mem 是一个“企业可信记忆治理”原型。它不试图做功能最全的聊天机器人，而是解决企业知识 Agent 最危险的三个问题：
+TARCS-Mem 是一个“企业可信记忆治理”开源参考实现。它不试图做功能最全的聊天机器人，而是解决企业知识 Agent 最危险的三个问题：
 
 1. 聊天记录、会议纪要或模型推断能不能自动写入长期记忆？
 2. 新旧制度冲突时，系统应该信谁、使用哪个有效时间版本？
@@ -30,9 +30,9 @@ tarcsmem evaluate-public --output docs/benchmarks/fiqa-public-report.json
 tarcsmem serve --db ./data/tarcsmem.db
 ```
 
-约2分钟中文演示位于 `docs/demo/tarcsmem-v0.5-demo.mp4`；推送与 `pyproject.toml` 版本一致的标签（当前为 `v0.7.0`）后，Release 工作流会自动测试、构建 Python 包并附加评测与视频资产。
+浏览器打开 `http://127.0.0.1:8000/console/` 使用 v0.8 治理控制台。旧版演示视频保留在 `docs/demo/` 作为历史材料；推送与 `pyproject.toml` 版本一致的标签后，Release 工作流会自动测试、构建 Python 包并附加评测资产。
 
-然后访问 `http://127.0.0.1:8000/docs` 查看 API。
+访问 `http://127.0.0.1:8000/docs` 查看 API。
 
 ## 重要边界
 
