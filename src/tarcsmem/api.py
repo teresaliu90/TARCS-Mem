@@ -17,6 +17,7 @@ from .service import TARCSMemoryService
 
 _IDEMPOTENCY_KEY = re.compile(r"^[A-Za-z0-9_-]{8,128}$")
 _REQUEST_ID = re.compile(r"^[A-Za-z0-9_-]{8,128}$")
+_ANSWER_ID = re.compile(r"^ans_[a-f0-9]{32}$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -537,6 +538,9 @@ def create_app(
                 "total_tokens": prompt_tokens + completion_tokens,
             },
             "tarcsmem": {
+                "answer_id": result.get("answer_id"),
+                "evidence_pack_id": result.get("evidence_pack_id"),
+                "correlation_id": result.get("correlation_id"),
                 "outcome": result.get("outcome"),
                 "citations": result.get("citations", []),
                 "decision_trace": result.get("decision_trace", {}),
@@ -559,6 +563,23 @@ def create_app(
             content=service.observability.metrics.prometheus_text(),
             media_type="text/plain; version=0.0.4",
         )
+
+    @app.get("/v1/answers/{answer_id}/audit")
+    def answer_audit(
+        answer_id: str,
+        tenant_id: str = Query(default="default", min_length=1, max_length=200),
+        roles: list[str] | None = None,
+    ):
+        """Return an answer-centric evidence chain within the caller's tenant/ACL boundary."""
+
+        if not _ANSWER_ID.fullmatch(answer_id):
+            raise HTTPException(status_code=404, detail="answer audit trail not found")
+        access = AccessContext.from_values(tenant_id, roles)
+        trail = service.get_answer_audit_trail(answer_id, access)
+        if trail is None:
+            # Unknown and unauthorized IDs deliberately share one response.
+            raise HTTPException(status_code=404, detail="answer audit trail not found")
+        return trail.to_dict()
 
     @app.get("/v1/memories/{record_id}/audit")
     def audit(record_id: str):

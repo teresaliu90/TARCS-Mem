@@ -54,12 +54,24 @@ The service exposes:
 | `POST /v1/memories` | governed memory ingestion |
 | `POST /v1/query` | deterministic governed retrieval response |
 | `POST /v1/chat` | governed retrieval plus configured LLM generation |
+| `GET /v1/answers/{answer_id}/audit` | privacy-safe answer evidence chain with tenant/ACL rechecks |
 | `GET /v1/models` | OpenAI-compatible governed model discovery |
 | `POST /v1/chat/completions` | non-streaming OpenAI-compatible governed chat |
 | `GET /metrics` | Prometheus-formatted privacy-safe metrics |
 | `GET /v1/observability` | bounded local trace/metric snapshot |
 
 `/v1/chat` and `/v1/chat/completions` are unavailable with HTTP 503 until vector/LLM dependencies and configuration are present. They do not bypass TARCS, ACL, valid-time, conflict or egress controls. By default, generated output also needs an exact `[SOURCE: ...]` label from the selected evidence pack; missing or invented labels are blocked. This is structural citation verification, not atomic claim entailment. Every response returns an `X-Request-ID`; retain that identifier in gateway logs rather than collecting raw prompts.
+
+`GET /v1/answers/{answer_id}/audit` returns stable answer/evidence-pack/correlation IDs, selected
+memory lineage, aggregate exclusions, policy references and verification results. It excludes raw
+questions and evidence content, returns the same `404` for unknown and unauthorized IDs, and
+rechecks selected records against the caller's tenant/roles at the original business date. The
+reference `tenant_id` and `roles` query parameters are demo inputs, not verified identity. A
+production gateway must derive these claims from OIDC/SSO and prevent client overrides.
+
+The response reports `integrity.chain_verified: false` while SQLite is used. Do not change that
+claim until events are stored in an append-only or WORM-capable ledger and hash-chain/signature
+verification is actually implemented and tested.
 
 The optional MCP stdio server is intended for local host integration. If it is
 converted to Streamable HTTP, configure the official SDK's OAuth resource-server

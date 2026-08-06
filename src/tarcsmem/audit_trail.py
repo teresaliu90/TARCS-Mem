@@ -1,8 +1,9 @@
-"""Experimental public contracts for answer-centric audit trails.
+"""Public contracts for privacy-safe, answer-centric audit trails.
 
-The v0.8 store exposes record-centric audit history. This module defines the
-post-v0.8 answer-centric response contract without pretending that the ledger,
-evidence-pack persistence or HTTP endpoint already exists.
+The reference service persists answer, evidence-pack and finalization events in
+SQLite and exposes them through an access-aware HTTP endpoint. SQLite is not an
+immutable or tamper-evident ledger; production deployments should replace that
+storage boundary while preserving these public response types.
 """
 
 from __future__ import annotations
@@ -106,7 +107,7 @@ class AnswerAuditTrail:
 
 @runtime_checkable
 class AnswerAuditTrailReader(Protocol):
-    """Storage-neutral query boundary for a future answer audit endpoint.
+    """Storage-neutral query boundary for the answer audit endpoint.
 
     A concrete reader must authorize ``access`` before returning tenant-scoped
     metadata. Evidence content remains excluded unless an independently verified

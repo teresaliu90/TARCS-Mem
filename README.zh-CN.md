@@ -14,7 +14,8 @@
 Design Partner 试点，并非已认证的企业生产安全产品。仓库已提供经过测试的端到端本地治理
 路径；可信身份、高可用存储和企业审计运维仍属于部署责任或路线图工作。详见
 [路线图](ROADMAP.md)、[下一阶段升级方案](docs/NEXT_STAGE_UPGRADE_PLAN.md)和
-[社区版与企业服务边界](docs/COMMUNITY_AND_ENTERPRISE_CN.md)。
+[社区版与企业服务边界](docs/COMMUNITY_AND_ENTERPRISE_CN.md)。愿意参加 30 分钟合成数据评审的
+工程师可直接使用[企业工程师反馈与匿名试点执行包](docs/DESIGN_PARTNER_FEEDBACK_KIT_CN.md)。
 
 ## 项目解决什么问题
 
@@ -34,12 +35,13 @@ TARCS-Mem 在知识写入、检索和生成之间增加可解释的治理层：
 - **企业安全基线**：写入前凭证阻断、PII 脱敏、租户隔离、文档角色 ACL、数据分级和可选 Bearer 鉴权；查询审计不保存原始问题。
 - **云端出境拦截**：云端模型调用前按已选证据分类强制校验，默认只允许 `public/internal`；机密与受限内容会拒绝出境，并留下不含正文的审计事件和指标。
 - **生成引用校验**：模型输出必须引用受治理证据包里的准确 `[SOURCE: ...]` 标签；缺失或编造来源的回答会被拦截。
+- **回答级审计 API**：每次查询都会生成稳定的回答、证据包和关联 ID；`GET /v1/answers/{answer_id}/audit` 在重新校验租户与 ACL 后，返回不含问题和证据正文的证据沿袭、排除摘要、策略引用与验证结果。
 - **隐私安全的可观测性**：内置 Prometheus 文本指标、有限内存链路追踪、trace ID 和 P95 延迟统计，默认不采集问题、文档或密钥正文。
 - **MCP v2 接入**：任意 MCP Host 可以检索可信记忆；Agent 提交的记忆被固定为低权威待审核声明，无法冒充正式制度自动激活。
 - **OpenAI 兼容网关**：现有聊天客户端可以调用 `/v1/chat/completions`，同时保留时间、权限、引用和云端出境治理。
 - **LangChain / LlamaIndex 一行式适配**：直接返回两个框架的原生 Retriever，且只能看到通过 GuardRead 的证据。
 - **Confluence 真实增量同步**：基于 Confluence Cloud REST API v2，支持游标分页、版本与内容哈希检查点、确定性幂等 ID、安全删除确认和默认人工审核。
-- **新手友好的治理控制台**：在一个页面体系中完成治理健康检查、安全问答演示、可信记忆查询、具名人工审核、隐私安全 Trace 和集成配置。
+- **新手友好的治理控制台**：通过三步引导完成演示数据确认、治理问答和回答证据链查看，也可继续使用可信记忆、具名人工审核、隐私安全 Trace 和集成配置。
 
 ![TARCS-Mem 带来源与决策轨迹的可信回答](docs/demo/assets/02-answer-v07.jpg)
 
@@ -78,9 +80,13 @@ tarcsmem seed --db ./data/tarcsmem-demo.db --if-empty
 tarcsmem serve --db ./data/tarcsmem-demo.db --port 8000
 ```
 
-浏览器打开 `http://127.0.0.1:8000/console/`。控制台与 FastAPI 使用同一服务，不需要单独运行前端。可以直接查看治理健康、安全测试场、可信记忆、人工审核、Trace 和集成状态。启用 `TARCSMEM_API_KEY` 后，在“集成中心 → 配置 API Key”填写令牌；令牌只保存在当前浏览器标签页。详细说明见 [治理控制台指南](docs/CONSOLE.md)。
+浏览器打开 `http://127.0.0.1:8000/console/`。控制台与 FastAPI 使用同一服务，不需要单独运行前端。按首页的三步引导操作：
 
-第一次体验只使用 6 条合成记录，不需要模型 API Key、模型下载或向量数据库。
+1. 确认已经加载 6 条合成记录；
+2. 进入“安全测试场”，运行“制度版本”场景；
+3. 点击“查看回答证据链”，查看回答 ID、采用/排除证据、策略引用、验证结果和写入沿袭。
+
+整个过程不需要模型 API Key、模型下载或向量数据库。页面明确显示 SQLite 参考存储尚不具备不可篡改证明。启用 `TARCSMEM_API_KEY` 后，在“集成中心 → 配置 API Key”填写令牌；令牌只保存在当前浏览器标签页。详细说明见 [治理控制台指南](docs/CONSOLE.md)。
 
 ### 最小 Python 示例
 
@@ -210,11 +216,10 @@ tarcsmem evaluate-public --queries 120 --distractors 300 \
   --output docs/benchmarks/fiqa-public-report.json
 ```
 
-当前自动化测试共 **94 项**，覆盖治理、安全、ACL、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、回答审计链类型契约、限流、幂等写入、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、可选依赖、Docker 构建，并从 wheel 在全新环境中执行 CLI 冒烟测试。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
+当前自动化测试共 **97 项**，覆盖治理、安全、ACL、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、回答审计 API、限流、幂等写入、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、可选依赖、Docker 构建，并从 wheel 在全新环境中执行 CLI 冒烟测试。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
 
-面向下一阶段的 `AnswerAuditTrail` 类型契约和计划中的
-`get_answer_audit_trail(answer_id)` 安全边界见
-[回答审计链设计](docs/ANSWER_AUDIT_TRAIL_DESIGN.md)。该 endpoint 在 v0.8 尚未实现。
+已实现的 `AnswerAuditTrail` 类型、`get_answer_audit_trail(answer_id)` 服务接口、HTTP API、
+权限边界与生产限制见 [回答审计链设计](docs/ANSWER_AUDIT_TRAIL_DESIGN.md)。
 
 经验证的旧版 v0.7 中文演示和逐秒脚本保留在 [docs/demo](docs/demo/)；当前产品界面为 v0.8 治理控制台。
 

@@ -47,10 +47,45 @@ def test_query_accepts_tenant_and_roles_and_emits_metrics(tmp_path):
             },
         )
         assert query.status_code == 200
-        assert query.json()["observability"]["trace_id"]
+        payload = query.json()
+        assert payload["observability"]["trace_id"]
+        assert payload["answer_id"].startswith("ans_")
+        assert payload["evidence_pack_id"].startswith("pack_")
+        assert payload["correlation_id"].startswith("corr_")
+        audit = client.get(f"/v1/answers/{payload['answer_id']}/audit")
+        assert audit.status_code == 200
+        assert audit.json()["answer_id"] == payload["answer_id"]
+        assert audit.json()["selected_evidence"][0]["memory_id"] == "sales-v2"
+        assert "question" not in audit.json()
         metrics = client.get("/metrics")
         assert metrics.status_code == 200
         assert "tarcsmem_queries_total" in metrics.text
+    app.state.tarcsmem_service.close()
+
+
+def test_answer_audit_endpoint_hides_unknown_and_cross_tenant_ids(tmp_path):
+    app = create_app(str(tmp_path / "answer-audit.db"), api_key="")
+    app.state.tarcsmem_service.seed()
+    with TestClient(app) as client:
+        query = client.post(
+            "/v1/query",
+            json={
+                "question": "2026年8月华南区销售折扣上限是多少？",
+                "as_of": "2026-08-15",
+                "tenant_id": "default",
+                "roles": [],
+            },
+        ).json()
+        unknown = client.get("/v1/answers/ans_00000000000000000000000000000000/audit")
+        wrong_tenant = client.get(
+            f"/v1/answers/{query['answer_id']}/audit",
+            params={"tenant_id": "another-tenant"},
+        )
+        malformed = client.get("/v1/answers/not-an-answer/audit")
+    assert unknown.status_code == 404
+    assert wrong_tenant.status_code == 404
+    assert malformed.status_code == 404
+    assert unknown.json() == wrong_tenant.json() == malformed.json()
     app.state.tarcsmem_service.close()
 
 

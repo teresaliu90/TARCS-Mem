@@ -67,6 +67,10 @@ def test_local_agent_keeps_tarcs_governance_before_llm(tmp_path):
     assert result["outcome"] == "answered"
     assert result["citations"] == ["POLICY-SALES-2026-07#1"]
     assert "受治理证据" in result["answer"]
+    trail = agent.memory.get_answer_audit_trail(str(result["answer_id"]), AccessContext())
+    assert trail is not None
+    assert trail.outcome == "answered"
+    assert trail.verification["citation_membership"] == "passed"
     agent.close()
 
 
@@ -161,7 +165,13 @@ def test_cloud_egress_blocks_confidential_evidence_before_generation(tmp_path):
     assert result["outcome"] == "abstained"
     assert result["generation_metrics"]["status"] == "blocked_by_cloud_egress_policy"
     assert cloud.calls == 0
-    assert agent.memory.audit_trail("query")[-1]["event_type"] == "cloud_egress"
+    events = agent.memory.audit_trail(str(result["answer_id"]))
+    assert any(event["event_type"] == "cloud_egress" for event in events)
+    assert events[-1]["detail"]["outcome"] == "abstained"
+    trail = agent.memory.get_answer_audit_trail(str(result["answer_id"]), AccessContext())
+    assert trail is not None
+    assert trail.outcome == "abstained"
+    assert trail.verification["cloud_egress"] == "blocked"
     assert "tarcsmem_cloud_egress_total" in agent.memory.observability.metrics.prometheus_text()
     agent.close()
 
@@ -211,7 +221,12 @@ def test_uncited_generation_is_blocked_after_governed_retrieval(tmp_path):
     assert result["outcome"] == "abstained"
     assert result["citations"] == []
     assert result["generation_metrics"]["citation_verification"] == "missing"
-    assert agent.memory.audit_trail("query")[-1]["event_type"] == "generation_verified"
+    events = agent.memory.audit_trail(str(result["answer_id"]))
+    assert any(event["event_type"] == "generation_verified" for event in events)
+    assert events[-1]["detail"]["outcome"] == "abstained"
+    trail = agent.memory.get_answer_audit_trail(str(result["answer_id"]), AccessContext())
+    assert trail is not None
+    assert trail.verification["citation_membership"] == "missing"
     assert (
         "tarcsmem_generation_verification_total"
         in agent.memory.observability.metrics.prometheus_text()

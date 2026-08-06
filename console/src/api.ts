@@ -54,6 +54,48 @@ export type Integrations = {
   secrets_exposed: boolean;
 };
 
+export type QueryResponse = {
+  answer_id?: string;
+  evidence_pack_id?: string;
+  correlation_id?: string;
+  outcome: string;
+  answer: string;
+  citations?: string[];
+  selected_evidence?: Array<Record<string, unknown>>;
+  decision_trace?: Record<string, unknown>;
+  observability?: Record<string, unknown>;
+};
+
+export type AnswerAuditTrail = {
+  answer_id: string;
+  evidence_pack_id: string;
+  correlation_id: string;
+  outcome: string;
+  created_at: string;
+  as_of: string;
+  query_hash: string;
+  principal_snapshot_hash: string;
+  selected_evidence: Array<{
+    memory_id: string;
+    source_ref: string;
+    classification: string;
+    valid_from: string | null;
+    valid_to: string | null;
+    selected_reason_codes: string[];
+    scores: Record<string, number>;
+    write_event_ids: string[];
+    approval_event_ids: string[];
+  }>;
+  excluded_summary: Record<string, number>;
+  policy_versions: Record<
+    string,
+    { policy_id: string; version: string; digest: string }
+  >;
+  verification: Record<string, string>;
+  integrity: Record<string, unknown>;
+  trace_id: string | null;
+};
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const headers = new Headers(options.headers);
   const token = window.sessionStorage.getItem("tarcsmem_api_key");
@@ -95,7 +137,7 @@ export const api = {
       headers: { "Idempotency-Key": `console-${decision}-${id}-${Date.now()}` },
     }),
   query: (question: string, asOf: string) =>
-    request<Record<string, unknown>>("/v1/query", {
+    request<QueryResponse>("/v1/query", {
       method: "POST",
       body: JSON.stringify({
         question,
@@ -104,5 +146,9 @@ export const api = {
         roles: [],
       }),
     }),
+  answerAudit: (answerId: string) =>
+    request<AnswerAuditTrail>(
+      `/v1/answers/${encodeURIComponent(answerId)}/audit`,
+    ),
   observability: () => request<Record<string, unknown>>("/v1/observability"),
 };

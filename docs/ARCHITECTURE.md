@@ -7,16 +7,17 @@ TARCS-Mem is a governance layer between memory ingestion/retrieval and an LLM Ag
 This document describes the current v0.8 component boundaries. The
 [governance pipeline design](GOVERNANCE_PIPELINE_DESIGN.md) is the post-v0.8 target for versioned
 policy bundles, a tamper-evident audit envelope, rebuildable active-memory projections,
-answer-centric evidence chains and configurable retrieval plugins. Proposed interfaces in that
-document are not claims about current behavior.
+configurable retrieval plugins. Proposed interfaces in that document are not claims about current
+behavior. The stable answer/evidence-pack/correlation IDs and answer-centric evidence-chain API are
+now implemented in the reference service.
 
 For the broader product-facing evolution, see the [next-stage upgrade plan](NEXT_STAGE_UPGRADE_PLAN.md),
 which covers architecture paradigms, console UX, PoC-to-production readiness, community backlog
 and service boundaries.
 
-The experimental [answer audit trail contract](ANSWER_AUDIT_TRAIL_DESIGN.md) defines the first
-typed interface for answer-centric evidence lineage. It is a contract and implementation sequence,
-not a claim that v0.8 already persists evidence packs or serves the proposed endpoint.
+The [answer audit trail design](ANSWER_AUDIT_TRAIL_DESIGN.md) documents the implemented typed
+interface, privacy boundary and `GET /v1/answers/{answer_id}/audit` endpoint. The reference SQLite
+event store supports evaluation and bounded pilots; it does not claim immutable-ledger integrity.
 
 ## Write path: GuardWrite
 

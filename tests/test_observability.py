@@ -56,5 +56,5 @@ def test_service_query_exposes_trace_but_never_raw_question():
     assert result.trace_id
     assert result.latency_ms is not None
     assert question not in str(service.observability.tracer.buffer.recent(50))
-    assert question not in str(service.audit_trail("query"))
+    assert question not in str(service.audit_trail(result.answer_id))
     service.close()

@@ -6,7 +6,8 @@ from tarcsmem.audit_trail import (
     AnswerEvidenceLineage,
     PolicyVersionRef,
 )
-from tarcsmem.models import AccessContext
+from tarcsmem.models import AccessContext, MemoryRecord, SourceType
+from tarcsmem.service import TARCSMemoryService
 
 
 def sample_trail() -> AnswerAuditTrail:
@@ -83,3 +84,62 @@ def test_answer_audit_reader_protocol_keeps_access_in_the_query_boundary():
         reader.get_answer_audit_trail("ans-001", AccessContext.from_values("tenant-a", ["auditor"]))
         == sample_trail()
     )
+
+
+def test_service_persists_and_rebuilds_answer_evidence_lineage():
+    service = TARCSMemoryService()
+    service.seed()
+    question = "2026年8月华南区销售折扣上限是多少？"
+
+    result = service.query(question, date(2026, 8, 15))
+    trail = service.get_answer_audit_trail(result.answer_id, AccessContext())
+
+    assert result.answer_id.startswith("ans_")
+    assert result.evidence_pack_id.startswith("pack_")
+    assert result.correlation_id.startswith("corr_")
+    assert trail is not None
+    assert trail.answer_id == result.answer_id
+    assert trail.evidence_pack_id == result.evidence_pack_id
+    assert trail.outcome == "answered"
+    assert trail.selected_evidence[0].memory_id == "sales-v2"
+    assert trail.verification["citation_membership"] == "passed"
+    assert trail.integrity == {
+        "chain_verified": False,
+        "mode": "sqlite_reference_store",
+    }
+    assert question not in str(service.audit_trail(result.answer_id))
+    service.close()
+
+
+def test_answer_audit_reader_rechecks_tenant_and_record_roles():
+    service = TARCSMemoryService()
+    service.ingest(
+        MemoryRecord(
+            id="finance-policy",
+            fact="财务审批上限为100万元。",
+            source_type=SourceType.OFFICIAL_POLICY,
+            source_ref="FINANCE-POLICY#1",
+            authority=1.0,
+            conflict_key="finance-limit",
+            evidence=["FINANCE-POLICY#1"],
+            tenant_id="tenant-a",
+            allowed_roles=["finance"],
+        )
+    )
+    finance_access = AccessContext.from_values("tenant-a", ["finance"])
+    result = service.query("财务审批上限是多少？", date(2026, 8, 15), finance_access)
+
+    assert service.get_answer_audit_trail(result.answer_id, finance_access) is not None
+    assert (
+        service.get_answer_audit_trail(
+            result.answer_id, AccessContext.from_values("tenant-a", ["employee"])
+        )
+        is None
+    )
+    assert (
+        service.get_answer_audit_trail(
+            result.answer_id, AccessContext.from_values("tenant-b", ["finance"])
+        )
+        is None
+    )
+    service.close()

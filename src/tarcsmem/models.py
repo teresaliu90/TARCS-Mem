@@ -37,6 +37,8 @@ class EventType(StrEnum):
     CLOUD_EGRESS = "cloud_egress"
     GENERATION_VERIFIED = "generation_verified"
     QUERY = "query"
+    EVIDENCE_PACK_CREATED = "evidence_pack_created"
+    ANSWER_FINALIZED = "answer_finalized"
 
 
 def utcnow() -> datetime:
@@ -193,11 +195,17 @@ class QueryResult:
     excluded: list[dict[str, str]]
     as_of: date
     route: str
+    answer_id: str
+    evidence_pack_id: str
+    correlation_id: str
     trace_id: str | None = None
     latency_ms: float | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            "answer_id": self.answer_id,
+            "evidence_pack_id": self.evidence_pack_id,
+            "correlation_id": self.correlation_id,
             "outcome": self.outcome,
             "answer": self.answer,
             "citations": self.citations,

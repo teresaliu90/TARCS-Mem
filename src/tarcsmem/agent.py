@@ -384,13 +384,20 @@ Governed evidence:
         return True, "passed", cited
 
     def _record_generation_verification(
-        self, provider: str, outcome: str, cited_sources: list[str]
+        self,
+        answer_id: str,
+        correlation_id: str,
+        provider: str,
+        outcome: str,
+        cited_sources: list[str],
     ) -> None:
         self.memory.store.append_event(
             AuditEvent(
                 EventType.GENERATION_VERIFIED,
-                "query",
+                answer_id,
                 {
+                    "answer_id": answer_id,
+                    "correlation_id": correlation_id,
                     "provider": provider,
                     "outcome": outcome,
                     "cited_sources_count": len(cited_sources),
@@ -428,8 +435,10 @@ Governed evidence:
                 self.memory.store.append_event(
                     AuditEvent(
                         EventType.CLOUD_EGRESS,
-                        "query",
+                        governed.answer_id,
                         {
+                            "answer_id": governed.answer_id,
+                            "correlation_id": governed.correlation_id,
                             "provider": provider,
                             "outcome": "blocked",
                             "blocked_classifications": blocked,
@@ -462,12 +471,26 @@ Governed evidence:
                         },
                     }
                 )
+                self.memory.record_answer_finalization(
+                    governed.answer_id,
+                    governed.correlation_id,
+                    "abstained",
+                    phase="generation",
+                    verification={"cloud_egress": "blocked"},
+                    provider=provider,
+                )
                 return result
             self.memory.store.append_event(
                 AuditEvent(
                     EventType.CLOUD_EGRESS,
-                    "query",
-                    {"provider": provider, "outcome": "allowed", "selected_records": len(evidence)},
+                    governed.answer_id,
+                    {
+                        "answer_id": governed.answer_id,
+                        "correlation_id": governed.correlation_id,
+                        "provider": provider,
+                        "outcome": "allowed",
+                        "selected_records": len(evidence),
+                    },
                 )
             )
             self.memory.observability.metrics.increment(
@@ -495,7 +518,13 @@ Governed evidence:
             verified, verification_outcome, cited_sources = self._verify_generated_citations(
                 answer, evidence
             )
-            self._record_generation_verification(provider, verification_outcome, cited_sources)
+            self._record_generation_verification(
+                governed.answer_id,
+                governed.correlation_id,
+                provider,
+                verification_outcome,
+                cited_sources,
+            )
             result["generation_metrics"] = {
                 **result["generation_metrics"],
                 "citation_verification": verification_outcome,
@@ -511,10 +540,30 @@ Governed evidence:
                         "citations": [],
                     }
                 )
+                self.memory.record_answer_finalization(
+                    governed.answer_id,
+                    governed.correlation_id,
+                    "abstained",
+                    phase="generation",
+                    verification={"citation_membership": verification_outcome},
+                    provider=provider,
+                )
                 return result
             result["citations"] = cited_sources
         result["answer"] = answer
         result["context_messages"] = len(messages) - 2
+        self.memory.record_answer_finalization(
+            governed.answer_id,
+            governed.correlation_id,
+            "answered",
+            phase="generation",
+            verification={
+                "citation_membership": (
+                    "passed" if self.citation_policy.require_citations else "disabled"
+                )
+            },
+            provider=provider,
+        )
         return result
 
     def pending_memories(self) -> list[MemoryRecord]:

@@ -16,7 +16,9 @@ certified production security product. The current release provides a tested end
 governance path, while verified identity, HA storage and enterprise audit operations remain
 deployment responsibilities or roadmap work. See the [roadmap](ROADMAP.md),
 [next-stage plan](docs/NEXT_STAGE_UPGRADE_PLAN.md) and
-[Community/Enterprise boundary](docs/COMMUNITY_AND_ENTERPRISE.md).
+[Community/Enterprise boundary](docs/COMMUNITY_AND_ENTERPRISE.md). Engineers interested in a
+30-minute, synthetic-data review can use the
+[design-partner feedback and pilot kit (Chinese)](docs/DESIGN_PARTNER_FEEDBACK_KIT_CN.md).
 
 TARCS-Mem answers a question that ordinary memory/RAG layers leave open: **which new facts may become active enterprise memory, and which evidence may be used to answer right now?**
 
@@ -52,12 +54,13 @@ It is deliberately not another general-purpose chatbot. It is a reusable governa
 - **Local or cloud generation** – switch between local Ollama/Qwen3 and the DeepSeek cloud API without changing the governance path.
 - **Cloud egress enforcement** – DeepSeek (or another cloud adapter) receives evidence only after a classification allow-list check; `confidential` and `restricted` are blocked by default, with privacy-safe audit events and metrics.
 - **Citation verification** – a generated answer must cite an exact source label from the governed evidence pack; missing or invented citations are blocked before return.
+- **Answer-centric audit API** – every query receives stable answer, evidence-pack and correlation IDs; `GET /v1/answers/{answer_id}/audit` returns authorized evidence lineage, exclusions, policy references and verification results without raw question or evidence text.
 - **MCP v2 integration** – any MCP host can search governed memory; agent-authored proposals are forced into low-authority human review and cannot self-promote to policy.
 - **OpenAI-compatible gateway** – existing chat clients can use `/v1/chat/completions` while TARCS citation, time, access and egress controls remain enforced.
 - **LangChain and LlamaIndex adapters** – convert governed evidence into each framework's native retriever with one function call; neither adapter can read the unfiltered candidate pool.
 - **Incremental Confluence connector** – Confluence Cloud REST API v2 cursor pagination, version/hash checkpoints, deterministic retry-safe IDs, safe deletion handling and human-review defaults.
 - **Beginner-friendly governance console** – one FastAPI-served React workspace for health, safe query experiments, governed memories, named human review, privacy-safe traces and integrations.
-- **Production-oriented delivery** – retry-safe write idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 94 tests, Python 3.11/3.12 and Node CI, clean-wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
+- **Production-oriented delivery** – retry-safe write idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 97 tests, Python 3.11/3.12 and Node CI, clean-wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
 
 `TARCS-Mem` is a reference implementation, not a claim of production certification. Request-body roles are demo inputs, not trusted identity claims. A real production deployment must bind tenant/roles from OIDC/SSO, externalize authorization policy, add encryption/key management, malware scanning, retention controls, SIEM export, backup/restore and load/red-team tests.
 
@@ -81,8 +84,8 @@ User question -> hybrid retrieval -> RRF -> TARCS constraints/ranking
 Read the formal choices in [docs/ALGORITHM.md](docs/ALGORITHM.md), the current component boundaries
 in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and the explicitly proposed post-v0.8 event,
 projection and configurable-pipeline design in
-[docs/GOVERNANCE_PIPELINE_DESIGN.md](docs/GOVERNANCE_PIPELINE_DESIGN.md). The first experimental
-answer-centric interface is documented in
+[docs/GOVERNANCE_PIPELINE_DESIGN.md](docs/GOVERNANCE_PIPELINE_DESIGN.md). The implemented
+answer-centric reference API and its production limitations are documented in
 [docs/ANSWER_AUDIT_TRAIL_DESIGN.md](docs/ANSWER_AUDIT_TRAIL_DESIGN.md).
 
 ## Try it in five minutes
@@ -99,9 +102,15 @@ tarcsmem seed --db ./data/tarcsmem-demo.db --if-empty
 tarcsmem serve --db ./data/tarcsmem-demo.db --port 8000
 ```
 
-Open `http://127.0.0.1:8000/console/` and run the **Policy version** scenario.
-The first experience uses six synthetic records and needs no model API key, model download
-or vector database.
+Open `http://127.0.0.1:8000/console/` and follow the three-step first-run guide:
+
+1. confirm that the six synthetic records are loaded;
+2. open the Sandbox and run the **Policy version** scenario;
+3. select **查看回答证据链** to inspect the answer ID, selected memory lineage, exclusions,
+   policy reference and verification result.
+
+This first experience needs no model API key, model download or vector database. The displayed
+SQLite integrity notice is intentional: the reference store is not an immutable audit ledger.
 
 You can also inspect the same governed answer from the command line:
 

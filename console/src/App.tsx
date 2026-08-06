@@ -25,7 +25,14 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { api, Integrations, Memory, Overview } from "./api";
+import {
+  AnswerAuditTrail,
+  api,
+  Integrations,
+  Memory,
+  Overview,
+  QueryResponse,
+} from "./api";
 
 type Page =
   | "overview"
@@ -60,6 +67,20 @@ function App() {
   const [error, setError] = useState("");
   const [mobileNav, setMobileNav] = useState(false);
   const [apiKeyOpen, setApiKeyOpen] = useState(false);
+  const [firstRunProgress, setFirstRunProgress] = useState(() => {
+    const stored = Number(
+      window.sessionStorage.getItem("tarcsmem_first_run") ?? "0",
+    );
+    return Number.isFinite(stored) ? Math.min(3, Math.max(0, stored)) : 0;
+  });
+
+  const advanceFirstRun = (step: number) => {
+    setFirstRunProgress((current) => {
+      const next = Math.max(current, step);
+      window.sessionStorage.setItem("tarcsmem_first_run", String(next));
+      return next;
+    });
+  };
 
   const refresh = async () => {
     setError("");
@@ -216,9 +237,13 @@ function App() {
             </div>
           )}
           {page === "overview" && (
-            <OverviewPage overview={overview} onNavigate={nav} />
+            <OverviewPage
+              overview={overview}
+              onNavigate={nav}
+              firstRunProgress={firstRunProgress}
+            />
           )}
-          {page === "sandbox" && <SandboxPage />}
+          {page === "sandbox" && <SandboxPage onProgress={advanceFirstRun} />}
           {page === "memories" && (
             <MemoriesPage
               memories={memories}
@@ -332,11 +357,17 @@ function Metric({
 function OverviewPage({
   overview,
   onNavigate,
+  firstRunProgress,
 }: {
   overview: Overview | null;
   onNavigate: (page: Page) => void;
+  firstRunProgress: number;
 }) {
   if (!overview) return <Loading />;
+  const visibleProgress = Math.max(
+    firstRunProgress,
+    overview.total_memories > 0 ? 1 : 0,
+  );
   return (
     <>
       <SectionHeader
@@ -470,25 +501,69 @@ function OverviewPage({
           )}
         </div>
       </div>
-      <div className="next-step">
-        <div className="next-icon">
-          <Gauge size={20} />
+      <div className="panel first-run">
+        <div className="first-run-head">
+          <div className="next-icon">
+            <Gauge size={20} />
+          </div>
+          <div>
+            <span className="eyebrow">10 分钟上手</span>
+            <h2>完成第一次可审计回答</h2>
+            <p>不需要模型密钥、外部数据源或向量数据库。</p>
+          </div>
+          <span className="first-run-count">{visibleProgress} / 3</span>
         </div>
-        <div>
-          <span className="eyebrow">建议下一步</span>
-          <h2>用安全测试场理解 TARCS-Mem 的价值</h2>
-          <p>
-            用三个无敏感数据的案例，直观看见过期、越权和冲突证据如何被拦截。
-          </p>
+        <div className="wizard-steps">
+          <WizardStep
+            number={1}
+            done={overview.total_memories > 0}
+            title="确认演示记忆"
+            detail={`${overview.total_memories} 条合成记录已加载`}
+          />
+          <WizardStep
+            number={2}
+            done={visibleProgress >= 2}
+            title="运行制度版本场景"
+            detail="查看时效、冲突与引用裁决"
+          />
+          <WizardStep
+            number={3}
+            done={visibleProgress >= 3}
+            title="打开回答证据链"
+            detail="追溯记忆、策略与审计事件"
+          />
         </div>
         <button
-          className="button secondary"
+          className="button secondary first-run-action"
           onClick={() => onNavigate("sandbox")}
         >
-          查看案例 <ArrowRight size={16} />
+          {visibleProgress >= 3 ? "重新体验" : "继续下一步"}
+          <ArrowRight size={16} />
         </button>
       </div>
     </>
+  );
+}
+
+function WizardStep({
+  number,
+  done,
+  title,
+  detail,
+}: {
+  number: number;
+  done: boolean;
+  title: string;
+  detail: string;
+}) {
+  return (
+    <div className={`wizard-step ${done ? "done" : ""}`}>
+      <span>{done ? <CheckCircle2 size={16} /> : number}</span>
+      <div>
+        <strong>{title}</strong>
+        <small>{detail}</small>
+      </div>
+    </div>
   );
 }
 function StatusBar({
@@ -520,14 +595,17 @@ function StatusBar({
   );
 }
 
-function SandboxPage() {
+function SandboxPage({ onProgress }: { onProgress: (step: number) => void }) {
   const [scenario, setScenario] = useState(0);
   const [question, setQuestion] = useState(
     "2026年8月华南区销售折扣上限是多少？",
   );
   const [asOf, setAsOf] = useState("2026-08-15");
-  const [result, setResult] = useState<Record<string, unknown> | null>(null);
+  const [result, setResult] = useState<QueryResponse | null>(null);
   const [loading, setLoading] = useState(false);
+  const [auditTrail, setAuditTrail] = useState<AnswerAuditTrail | null>(null);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditError, setAuditError] = useState("");
   const selectScenario = (
     index: number,
     nextQuestion: string,
@@ -537,12 +615,17 @@ function SandboxPage() {
     setQuestion(nextQuestion);
     setAsOf(nextDate);
     setResult(null);
+    setAuditTrail(null);
+    setAuditError("");
   };
   const run = async () => {
     setLoading(true);
     try {
       const value = await api.query(question, asOf);
       setResult(value);
+      setAuditTrail(null);
+      setAuditError("");
+      onProgress(2);
     } catch (err) {
       setResult({
         outcome: "error",
@@ -552,10 +635,22 @@ function SandboxPage() {
       setLoading(false);
     }
   };
+  const loadAudit = async () => {
+    if (!result?.answer_id) return;
+    setAuditLoading(true);
+    setAuditError("");
+    try {
+      const trail = await api.answerAudit(result.answer_id);
+      setAuditTrail(trail);
+      onProgress(3);
+    } catch (err) {
+      setAuditError(err instanceof Error ? err.message : "无法加载回答证据链");
+    } finally {
+      setAuditLoading(false);
+    }
+  };
   const answered = result?.outcome === "answered";
-  const selectedEvidence =
-    (result?.selected_evidence as Array<Record<string, unknown>> | undefined) ??
-    [];
+  const selectedEvidence = result?.selected_evidence ?? [];
   return (
     <>
       <SectionHeader
@@ -707,7 +802,30 @@ function SandboxPage() {
                     </span>
                   </div>
                 )}
+                {result.answer_id && (
+                  <div className="audit-entry">
+                    <div>
+                      <span>回答 ID</span>
+                      <code>{result.answer_id}</code>
+                    </div>
+                    <button
+                      className="button secondary"
+                      disabled={auditLoading}
+                      onClick={() => void loadAudit()}
+                    >
+                      <Network size={15} />
+                      {auditLoading ? "正在加载" : "查看回答证据链"}
+                    </button>
+                  </div>
+                )}
               </div>
+              {auditError && (
+                <div className="alert error audit-alert">
+                  <ShieldAlert size={16} />
+                  {auditError}
+                </div>
+              )}
+              {auditTrail && <EvidenceChainView trail={auditTrail} />}
               <div className="ordinary-rag">
                 <div>
                   <span className="eyebrow">普通 RAG 可能会</span>
@@ -732,6 +850,80 @@ function SandboxPage() {
         </div>
       </div>
     </>
+  );
+}
+
+function EvidenceChainView({ trail }: { trail: AnswerAuditTrail }) {
+  const excluded = Object.entries(trail.excluded_summary);
+  const verification = Object.entries(trail.verification);
+  return (
+    <section className="evidence-chain" aria-live="polite">
+      <div className="evidence-chain-head">
+        <div>
+          <span className="eyebrow">Answer evidence chain</span>
+          <h3>这次回答为什么可以返回？</h3>
+        </div>
+        <span
+          className={`outcome ${trail.outcome === "answered" ? "good" : "warn"}`}
+        >
+          {trail.outcome === "answered" ? "已通过治理" : "已安全拒答"}
+        </span>
+      </div>
+      <div className="chain-meta">
+        <span>业务日期 {trail.as_of}</span>
+        <span>证据包 {trail.evidence_pack_id.slice(0, 17)}…</span>
+        <span>Trace {trail.trace_id?.slice(0, 12) ?? "—"}…</span>
+      </div>
+      <div className="chain-section">
+        <strong>采用的证据</strong>
+        {trail.selected_evidence.length ? (
+          trail.selected_evidence.map((evidence) => (
+            <div className="chain-evidence" key={evidence.memory_id}>
+              <div>
+                <BookOpen size={15} />
+                <span>
+                  <strong>{evidence.source_ref}</strong>
+                  <small>{evidence.memory_id}</small>
+                </span>
+              </div>
+              <p>{evidence.selected_reason_codes.join(" · ")}</p>
+              <small>
+                {evidence.classification} · TARCS {evidence.scores.tarcs ?? "—"}{" "}
+                · {evidence.write_event_ids.length} 个写入事件
+              </small>
+            </div>
+          ))
+        ) : (
+          <p className="chain-empty">没有证据通过全部治理约束。</p>
+        )}
+      </div>
+      <div className="chain-summary-grid">
+        <div>
+          <strong>排除摘要</strong>
+          <p>
+            {excluded.length
+              ? excluded
+                  .map(([reason, count]) => `${reason} ${count}`)
+                  .join(" · ")
+              : "没有额外排除项"}
+          </p>
+        </div>
+        <div>
+          <strong>验证结果</strong>
+          <p>
+            {verification
+              .map(([name, state]) => `${name} ${state}`)
+              .join(" · ")}
+          </p>
+        </div>
+      </div>
+      <div className="chain-integrity">
+        <ShieldCheck size={15} />
+        <span>
+          当前为 SQLite 参考审计存储；尚未宣称已启用生产级哈希链或不可变账本。
+        </span>
+      </div>
+    </section>
   );
 }
 function SafetyCheck({
