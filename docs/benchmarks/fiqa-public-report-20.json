@@ -1,0 +1,156 @@
+{
+  "dataset": "BEIR/FiQA",
+  "split": "test",
+  "scope": "bounded_candidate_pool",
+  "queries": 20,
+  "documents": 195,
+  "dataset_sha256": "050fc825f2d1a90b4e08ed8bc2f8eff3464b49b0378b7241db849667de428f48",
+  "systems": {
+    "lexical_baseline": {
+      "recall_at_1": 0.2425,
+      "recall_at_5": 0.5092,
+      "recall_at_10": 0.6417,
+      "mrr_at_10": 0.6139,
+      "ndcg_at_10": 0.5292
+    },
+    "tarcs_rrf_hashed_semantic": {
+      "recall_at_1": 0.255,
+      "recall_at_5": 0.6542,
+      "recall_at_10": 0.6792,
+      "mrr_at_10": 0.6042,
+      "ndcg_at_10": 0.5764
+    }
+  },
+  "per_case": [
+    {
+      "query_id": "10639",
+      "relevant_count": 5,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "7431",
+      "relevant_count": 1,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "68",
+      "relevant_count": 1,
+      "baseline_hit_at_10": false,
+      "tarcs_hit_at_10": false
+    },
+    {
+      "query_id": "8378",
+      "relevant_count": 3,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "1150",
+      "relevant_count": 4,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "7529",
+      "relevant_count": 2,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "7329",
+      "relevant_count": 2,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "2724",
+      "relevant_count": 2,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "8513",
+      "relevant_count": 1,
+      "baseline_hit_at_10": false,
+      "tarcs_hit_at_10": false
+    },
+    {
+      "query_id": "1915",
+      "relevant_count": 2,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "7590",
+      "relevant_count": 2,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "4125",
+      "relevant_count": 2,
+      "baseline_hit_at_10": false,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "3067",
+      "relevant_count": 2,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "9245",
+      "relevant_count": 1,
+      "baseline_hit_at_10": false,
+      "tarcs_hit_at_10": false
+    },
+    {
+      "query_id": "7448",
+      "relevant_count": 1,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "4019",
+      "relevant_count": 5,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "7295",
+      "relevant_count": 1,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "5085",
+      "relevant_count": 1,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "5981",
+      "relevant_count": 5,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    },
+    {
+      "query_id": "4414",
+      "relevant_count": 2,
+      "baseline_hit_at_10": true,
+      "tarcs_hit_at_10": true
+    }
+  ],
+  "limitations": [
+    "Uses a bounded pool of qrel documents plus public distractors, not all 57.6k documents.",
+    "Numbers are reproducible portfolio evidence and are not comparable to the BEIR leaderboard.",
+    "The dependency-free semantic score is not a substitute for the optional BGE reranker path."
+  ],
+  "source": {
+    "corpus": "https://huggingface.co/datasets/BeIR/fiqa",
+    "qrels": "https://huggingface.co/datasets/BeIR/fiqa-qrels",
+    "license": "CC BY-SA 4.0; raw data is cached outside Git"
+  }
+}

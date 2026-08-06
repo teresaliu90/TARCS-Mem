@@ -1,0 +1,1369 @@
+{
+  "dataset": "BEIR/FiQA",
+  "split": "test",
+  "scope": "bounded_candidate_pool",
+  "queries": 120,
+  "documents": 610,
+  "dataset_sha256": "562e7124d64632657e7529b866d308c8ed009fc260597deee20387f3704e8b8c",
+  "top_k": 10,
+  "bootstrap": {
+    "iterations": 1000,
+    "seed": 42,
+    "interval": 0.95
+  },
+  "systems": {
+    "lexical_baseline": {
+      "metrics": {
+        "recall_at_1": 0.1532,
+        "recall_at_5": 0.3075,
+        "recall_at_10": 0.3624,
+        "mrr_at_10": 0.3748,
+        "ndcg_at_10": 0.2988
+      },
+      "confidence_intervals": {
+        "recall_at_1": {
+          "lower_95": 0.1001,
+          "upper_95": 0.2067
+        },
+        "recall_at_5": {
+          "lower_95": 0.2411,
+          "upper_95": 0.3704
+        },
+        "recall_at_10": {
+          "lower_95": 0.2898,
+          "upper_95": 0.4271
+        },
+        "mrr_at_10": {
+          "lower_95": 0.3019,
+          "upper_95": 0.4489
+        },
+        "ndcg_at_10": {
+          "lower_95": 0.2377,
+          "upper_95": 0.3541
+        }
+      },
+      "retrieval_latency": {
+        "mean_ms": 14.991,
+        "p95_ms": 15.599
+      }
+    },
+    "hashed_semantic": {
+      "metrics": {
+        "recall_at_1": 0.1298,
+        "recall_at_5": 0.2406,
+        "recall_at_10": 0.2799,
+        "mrr_at_10": 0.3203,
+        "ndcg_at_10": 0.2474
+      },
+      "confidence_intervals": {
+        "recall_at_1": {
+          "lower_95": 0.0831,
+          "upper_95": 0.176
+        },
+        "recall_at_5": {
+          "lower_95": 0.1783,
+          "upper_95": 0.3022
+        },
+        "recall_at_10": {
+          "lower_95": 0.2135,
+          "upper_95": 0.3429
+        },
+        "mrr_at_10": {
+          "lower_95": 0.2447,
+          "upper_95": 0.395
+        },
+        "ndcg_at_10": {
+          "lower_95": 0.1896,
+          "upper_95": 0.3047
+        }
+      },
+      "retrieval_latency": {
+        "mean_ms": 18.7,
+        "p95_ms": 19.666
+      }
+    },
+    "rrf_lexical_semantic": {
+      "metrics": {
+        "recall_at_1": 0.1447,
+        "recall_at_5": 0.3428,
+        "recall_at_10": 0.4058,
+        "mrr_at_10": 0.4071,
+        "ndcg_at_10": 0.3273
+      },
+      "confidence_intervals": {
+        "recall_at_1": {
+          "lower_95": 0.0953,
+          "upper_95": 0.198
+        },
+        "recall_at_5": {
+          "lower_95": 0.2729,
+          "upper_95": 0.4119
+        },
+        "recall_at_10": {
+          "lower_95": 0.333,
+          "upper_95": 0.472
+        },
+        "mrr_at_10": {
+          "lower_95": 0.3313,
+          "upper_95": 0.4848
+        },
+        "ndcg_at_10": {
+          "lower_95": 0.2702,
+          "upper_95": 0.3862
+        }
+      },
+      "retrieval_latency": {
+        "mean_ms": 33.972,
+        "p95_ms": 35.417
+      }
+    },
+    "tarcs_rrf_governance_cost": {
+      "metrics": {
+        "recall_at_1": 0.2037,
+        "recall_at_5": 0.3711,
+        "recall_at_10": 0.4446,
+        "mrr_at_10": 0.4839,
+        "ndcg_at_10": 0.3783
+      },
+      "confidence_intervals": {
+        "recall_at_1": {
+          "lower_95": 0.1451,
+          "upper_95": 0.2629
+        },
+        "recall_at_5": {
+          "lower_95": 0.3002,
+          "upper_95": 0.4373
+        },
+        "recall_at_10": {
+          "lower_95": 0.3693,
+          "upper_95": 0.5075
+        },
+        "mrr_at_10": {
+          "lower_95": 0.4005,
+          "upper_95": 0.5657
+        },
+        "ndcg_at_10": {
+          "lower_95": 0.3152,
+          "upper_95": 0.4393
+        }
+      },
+      "retrieval_latency": {
+        "mean_ms": 79.996,
+        "p95_ms": 83.736
+      }
+    }
+  },
+  "per_case": [
+    {
+      "query_id": "10639",
+      "relevant_count": 5,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "7431",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "68",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "8378",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "1150",
+      "relevant_count": 4,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "7529",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "7329",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "2724",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "8513",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "1915",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "7590",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4125",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "3067",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "9245",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "7448",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4019",
+      "relevant_count": 5,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "7295",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "5085",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "5981",
+      "relevant_count": 5,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4414",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "3759",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "4920",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "8102",
+      "relevant_count": 4,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "8013",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "9381",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "1824",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "6803",
+      "relevant_count": 4,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "852",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4837",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "1920",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "932",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "6835",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "1889",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "5054",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "7513",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "9108",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "1451",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "2923",
+      "relevant_count": 5,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4484",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "2108",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "659",
+      "relevant_count": 10,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "6080",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "5271",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "8296",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4011",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "5592",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "6629",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "9291",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "8970",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "1783",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "6004",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "7269",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "3530",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "2516",
+      "relevant_count": 4,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "9126",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "42",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "3357",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "34",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "9329",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "904",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "9929",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "89",
+      "relevant_count": 6,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "8537",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "6395",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "4499",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "5125",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "858",
+      "relevant_count": 4,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4037",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "7992",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "8795",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "776",
+      "relevant_count": 12,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "3091",
+      "relevant_count": 7,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "8017",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "7441",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "3480",
+      "relevant_count": 4,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "570",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "687",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "2648",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "8351",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "594",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "18",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "2348",
+      "relevant_count": 15,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "10122",
+      "relevant_count": 4,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "7345",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "5906",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "109",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "8202",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "7279",
+      "relevant_count": 4,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "6909",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "5086",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "1297",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "6807",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "9644",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "8079",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "6131",
+      "relevant_count": 12,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "9332",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "5185",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "6849",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4153",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4700",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "6832",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "6219",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "5172",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4962",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "2580",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "2880",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "2183",
+      "relevant_count": 6,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "6199",
+      "relevant_count": 4,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "1322",
+      "relevant_count": 4,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "8779",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4767",
+      "relevant_count": 5,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "1198",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "2076",
+      "relevant_count": 2,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "766",
+      "relevant_count": 3,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4031",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "5853",
+      "relevant_count": 8,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "1159",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    },
+    {
+      "query_id": "7754",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "3724",
+      "relevant_count": 10,
+      "hits": {
+        "lexical_baseline": true,
+        "hashed_semantic": true,
+        "rrf_lexical_semantic": true,
+        "tarcs_rrf_governance_cost": true
+      }
+    },
+    {
+      "query_id": "4756",
+      "relevant_count": 1,
+      "hits": {
+        "lexical_baseline": false,
+        "hashed_semantic": false,
+        "rrf_lexical_semantic": false,
+        "tarcs_rrf_governance_cost": false
+      }
+    }
+  ],
+  "limitations": [
+    "Uses a bounded pool of qrel documents plus public distractors, not all 57.6k documents.",
+    "Numbers are reproducible portfolio evidence and are not comparable to the BEIR leaderboard.",
+    "The dependency-free semantic score is not a substitute for the optional BGE reranker path.",
+    "Public FiQA records share governance attributes, so this ablation measures retrieval and cost terms; temporal and authority controls are evaluated separately by deterministic governance cases."
+  ],
+  "source": {
+    "corpus": "https://huggingface.co/datasets/BeIR/fiqa",
+    "qrels": "https://huggingface.co/datasets/BeIR/fiqa-qrels",
+    "license": "CC BY-SA 4.0; raw data is cached outside Git"
+  }
+}

@@ -1,0 +1,37 @@
+services:
+  qdrant:
+    # Pin the tested server line; update deliberately through Dependabot.
+    image: qdrant/qdrant:v1.18.2
+    ports:
+      # Keep the vector database off the LAN by default. Put it behind a private
+      # network, service mesh or gateway in a real deployment.
+      - "127.0.0.1:6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+  tarcsmem:
+    build: .
+    init: true
+    ports:
+      - "8000:8000"
+    environment:
+      TARCSMEM_DB_PATH: /data/tarcsmem.db
+      TARCSMEM_QDRANT_URL: http://qdrant:6333
+      TARCSMEM_LLM_PROVIDER: ${TARCSMEM_LLM_PROVIDER:-extractive}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      TARCSMEM_DEEPSEEK_MODEL: ${TARCSMEM_DEEPSEEK_MODEL:-deepseek-v4-flash}
+      TARCSMEM_CLOUD_ALLOWED_CLASSIFICATIONS: ${TARCSMEM_CLOUD_ALLOWED_CLASSIFICATIONS:-public,internal}
+      TARCSMEM_REQUIRE_GENERATION_CITATIONS: ${TARCSMEM_REQUIRE_GENERATION_CITATIONS:-true}
+      TARCSMEM_API_KEY: ${TARCSMEM_API_KEY:-}
+      TARCSMEM_RATE_LIMIT_REQUESTS_PER_MINUTE: ${TARCSMEM_RATE_LIMIT_REQUESTS_PER_MINUTE:-120}
+      TARCSMEM_IDEMPOTENCY_TTL_HOURS: ${TARCSMEM_IDEMPOTENCY_TTL_HOURS:-24}
+    volumes:
+      - tarcsmem_data:/data
+    depends_on:
+      - qdrant
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  tarcsmem_data:
+  qdrant_data:

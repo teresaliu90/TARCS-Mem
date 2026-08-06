@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e '.[dev,api,mcp,integrations]'
+      - run: ruff check src tests
+      - run: ruff format --check src tests
+      - run: pytest -q
+
+  package-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip build
+      - run: python -m build
+      - run: python -m venv /tmp/tarcsmem-smoke
+      - run: /tmp/tarcsmem-smoke/bin/pip install --no-deps dist/*.whl
+      - run: /tmp/tarcsmem-smoke/bin/tarcsmem --help
+      - run: /tmp/tarcsmem-smoke/bin/tarcsmem sync-confluence --help
+      - run: test -x /tmp/tarcsmem-smoke/bin/tarcsmem-mcp
+      - run: /tmp/tarcsmem-smoke/bin/tarcsmem seed --db /tmp/tarcsmem-smoke.db
+      - run: /tmp/tarcsmem-smoke/bin/tarcsmem ask --db /tmp/tarcsmem-smoke.db --question '2026年8月华南区销售折扣上限是多少？' --as-of 2026-08-15
+
+  optional-extras:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e '.[ui,api,cloud,mcp,integrations]'
+      - run: python -c "import gradio, qdrant_client; from mcp import Client; from tarcsmem import as_langchain_retriever, as_llamaindex_retriever; from tarcsmem.ui import build_ui; assert build_ui and Client and as_langchain_retriever and as_llamaindex_retriever"
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose config --quiet
+      - run: docker build --tag tarcsmem:ci .

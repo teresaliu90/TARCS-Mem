@@ -1,0 +1,22 @@
+.venv/
+.venv-*/
+__pycache__/
+*.py[cod]
+.DS_Store
+.pytest_cache/
+.ruff_cache/
+build/
+dist/
+*.egg-info/
+.env
+data/*.db
+data/*.sqlite*
+data/external/
+data/qdrant*/
+data/*checkpoint*.json
+artifacts/
+tmp/
+*.zip
+
+# Personal portfolio preparation notes; keep the public repository project-only.
+HUAWEI_AI_APPLICATION_INTERVIEW_PLAN_CN.md

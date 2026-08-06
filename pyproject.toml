@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tarcsmem"
+version = "0.7.0"
+description = "Trusted enterprise memory governance for RAG and AI agents"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "TARCS-Mem contributors"}]
+keywords = ["rag", "ai-agents", "memory", "governance", "enterprise-ai"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.optional-dependencies]
+api = ["fastapi>=0.115,<1", "uvicorn[standard]>=0.30,<1"]
+agent = ["qdrant-client>=1.12,<2"]
+ui = ["gradio>=5,<7", "qdrant-client>=1.12,<2"]
+local-models = ["FlagEmbedding>=1.3,<2"]
+documents = ["docling>=2,<3"]
+dev = ["build>=1.2,<2", "pytest>=8,<9", "ruff>=0.6,<1", "httpx>=0.27,<1"]
+video = ["pillow>=11,<13", "imageio-ffmpeg>=0.6,<1"]
+cloud = ["certifi>=2025.8.3"]
+mcp = ["mcp>=2,<3"]
+integrations = ["langchain-core>=1,<2", "llama-index-core>=0.14,<1"]
+
+[project.scripts]
+tarcsmem = "tarcsmem.cli:main"
+tarcsmem-mcp = "tarcsmem.mcp_server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

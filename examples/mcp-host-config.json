@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "tarcsmem": {
+      "command": "/absolute/path/to/venv/bin/tarcsmem-mcp",
+      "env": {
+        "TARCSMEM_DB_PATH": "/absolute/path/to/tarcsmem.db"
+      }
+    }
+  }
+}
