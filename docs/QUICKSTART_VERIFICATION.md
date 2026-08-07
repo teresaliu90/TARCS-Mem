@@ -1,8 +1,8 @@
 # Verified clean-environment Quickstart
 
-Last maintainer verification: **2026-08-07**, macOS, Python 3.11-compatible project environment,
-Node.js 25 locally; CI pins Python 3.11 and Node.js 22. The critical path is repeated on every
-push by `.github/workflows/ci.yml`.
+Last maintainer verification: **2026-08-07**, a clean local clone with a fresh Python 3.12 virtual
+environment and Node.js 25; CI pins Python 3.11 and Node.js 22. The critical path is repeated on
+every push by `.github/workflows/ci.yml`.
 
 This guide verifies the FastAPI governance console. It does not start the optional Gradio Agent,
 download a model, connect a vector database, or require an external credential.
