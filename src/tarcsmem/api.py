@@ -9,6 +9,7 @@ from datetime import UTC, date, datetime
 from pathlib import Path
 from threading import RLock
 from time import monotonic, time
+from typing import Annotated
 from uuid import uuid4
 
 from . import __version__
@@ -242,13 +243,16 @@ def create_app(
     def list_memories(
         status: MemoryStatus | None = None,
         classification: str | None = None,
-        tenant_id: str | None = None,
+        tenant_id: str = Query(default="default", min_length=1, max_length=200),
+        roles: Annotated[list[str] | None, Query()] = None,
         search: str | None = None,
         limit: int = Query(default=50, ge=1, le=200),
         offset: int = Query(default=0, ge=0),
     ):
         """List governed memory projections for the authenticated admin console."""
-        records = sorted(service.store.list_all(), key=lambda item: item.observed_at, reverse=True)
+        access = AccessContext.from_values(tenant_id, roles)
+        records, _ = service.retriever.filter_accessible(service.store.list_all(), access)
+        records = sorted(records, key=lambda item: item.observed_at, reverse=True)
         if status is not None:
             records = [record for record in records if record.status is status]
         if classification:
@@ -263,8 +267,6 @@ def create_app(
             records = [
                 record for record in records if record.classification == normalized_classification
             ]
-        if tenant_id:
-            records = [record for record in records if record.tenant_id == tenant_id.strip()]
         if search:
             normalized_search = search.strip().casefold()
             records = [
@@ -283,13 +285,20 @@ def create_app(
         }
 
     @app.get("/v1/memories/{record_id}")
-    def memory_detail(record_id: str):
+    def memory_detail(
+        record_id: str,
+        tenant_id: str = Query(default="default", min_length=1, max_length=200),
+        roles: Annotated[list[str] | None, Query()] = None,
+    ):
+        access = AccessContext.from_values(tenant_id, roles)
         record = service.store.get(record_id)
-        if record is None:
+        if record is None or not service.retriever.filter_accessible([record], access)[0]:
             raise HTTPException(status_code=404, detail="memory record not found")
         related = [
             item.to_dict()
-            for item in service.store.by_conflict_key(record.conflict_key, record.tenant_id)
+            for item in service.retriever.filter_accessible(
+                service.store.by_conflict_key(record.conflict_key, record.tenant_id), access
+            )[0]
             if item.id != record.id
         ]
         return {
@@ -299,8 +308,12 @@ def create_app(
         }
 
     @app.get("/v1/console/overview")
-    def console_overview():
-        records = service.store.list_all()
+    def console_overview(
+        tenant_id: str = Query(default="default", min_length=1, max_length=200),
+        roles: Annotated[list[str] | None, Query()] = None,
+    ):
+        access = AccessContext.from_values(tenant_id, roles)
+        records, _ = service.retriever.filter_accessible(service.store.list_all(), access)
         counts = {status.value: 0 for status in MemoryStatus}
         classifications = {
             "public": 0,
@@ -576,7 +589,7 @@ def create_app(
     def answer_audit(
         answer_id: str,
         tenant_id: str = Query(default="default", min_length=1, max_length=200),
-        roles: list[str] | None = None,
+        roles: Annotated[list[str] | None, Query()] = None,
     ):
         """Return an answer-centric evidence chain within the caller's tenant/ACL boundary."""
 
@@ -590,8 +603,14 @@ def create_app(
         return trail.to_dict()
 
     @app.get("/v1/memories/{record_id}/audit")
-    def audit(record_id: str):
-        if service.store.get(record_id) is None:
+    def audit(
+        record_id: str,
+        tenant_id: str = Query(default="default", min_length=1, max_length=200),
+        roles: Annotated[list[str] | None, Query()] = None,
+    ):
+        access = AccessContext.from_values(tenant_id, roles)
+        record = service.store.get(record_id)
+        if record is None or not service.retriever.filter_accessible([record], access)[0]:
             raise HTTPException(status_code=404, detail="memory record not found")
         return {"record_id": record_id, "events": service.audit_trail(record_id)}
 
@@ -599,8 +618,15 @@ def create_app(
     def review(
         record_id: str,
         request: ReviewRequest,
+        tenant_id: str = Query(default="default", min_length=1, max_length=200),
+        roles: Annotated[list[str] | None, Query()] = None,
         idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
     ):
+        access = AccessContext.from_values(tenant_id, roles)
+        record = service.store.get(record_id)
+        if record is None or not service.retriever.filter_accessible([record], access)[0]:
+            raise HTTPException(status_code=404, detail="memory record not found")
+
         def operation() -> dict[str, object]:
             return service.review(
                 record_id,

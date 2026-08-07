@@ -20,6 +20,18 @@ class FakeVectorStore:
         return [{"payload": {"record_id": record_id}} for record_id, _, _ in entries[:limit]]
 
 
+class AdversarialVectorStore(FakeVectorStore):
+    """Records source filtering but deliberately returns a foreign candidate too."""
+
+    def __init__(self):
+        super().__init__()
+        self.search_calls = []
+
+    def search(self, vector, limit=12, tenant_id=None):
+        self.search_calls.append({"limit": limit, "tenant_id": tenant_id})
+        return [{"payload": {"record_id": record_id}} for record_id, _, _ in self.entries[:limit]]
+
+
 class FakeReranker:
     def rerank(self, query, passages):
         return [1.0] * len(passages)
@@ -296,6 +308,56 @@ def test_vector_candidate_oversampling_filters_acl_decoys_before_governance(tmp_
     result = agent.chat("华南区销售折扣上限是多少？", date(2026, 8, 15))
     assert result["outcome"] == "answered"
     assert result["citations"] == ["POLICY-SALES-2026-07#1"]
+    agent.close()
+
+
+def test_vector_candidates_are_tenant_filtered_at_source_and_rechecked_after_load(tmp_path):
+    agent = TARCSChatAgent(
+        LocalAgentConfig(
+            db_path=str(tmp_path / "tenant-vector.db"),
+            qdrant_url="http://qdrant-test.invalid",
+            retrieval_limit=2,
+            candidate_pool_multiplier=4,
+        ),
+        embedding=HashEmbedding(),
+        reranker=FakeReranker(),
+        llm=FakeLLM(),
+    )
+    vectors = AdversarialVectorStore()
+    agent.vectors = vectors
+    agent.ingest_record(
+        MemoryRecord(
+            id="foreign-vector-hit",
+            fact="华南区销售折扣上限为99%。",
+            source_type=SourceType.OFFICIAL_POLICY,
+            source_ref="FOREIGN#1",
+            authority=1.0,
+            conflict_key="foreign-limit",
+            evidence=["FOREIGN#1"],
+            tenant_id="beta",
+        )
+    )
+    agent.ingest_record(
+        MemoryRecord(
+            id="allowed-vector-hit",
+            fact="华南区销售折扣上限为5%。",
+            source_type=SourceType.OFFICIAL_POLICY,
+            source_ref="ALPHA#1",
+            authority=1.0,
+            conflict_key="alpha-limit",
+            evidence=["ALPHA#1"],
+            tenant_id="alpha",
+        )
+    )
+
+    candidates = agent._candidate_records(
+        "华南区销售折扣上限是多少？",
+        date(2026, 8, 6),
+        AccessContext.from_values("alpha", []),
+    )
+
+    assert vectors.search_calls == [{"limit": 8, "tenant_id": "alpha"}]
+    assert [record.id for record in candidates] == ["allowed-vector-hit"]
     agent.close()
 
 

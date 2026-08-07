@@ -1,0 +1,49 @@
+{
+  "report_type": "maintainer_run_synthetic_pilot",
+  "customer_pilot": false,
+  "external_feedback": false,
+  "run_date": "2026-08-07",
+  "fixture_records": 6,
+  "cases": 4,
+  "tarcs_accuracy": 1.0,
+  "naive_baseline_accuracy": 0.25,
+  "expected_abstention_cases": 1,
+  "correct_abstentions": 1,
+  "correct_abstention_rate": 1.0,
+  "avg_selected_records": 0.75,
+  "avg_estimated_context_tokens": 15.75,
+  "results": [
+    {
+      "case": "new_policy_beats_old_policy",
+      "expected_source": "POLICY-SALES-2026-07#1",
+      "tarcs_source": "POLICY-SALES-2026-07#1",
+      "baseline_source": "POLICY-SALES-2026-01#1",
+      "outcome": "answered",
+      "correct": true
+    },
+    {
+      "case": "historical_policy_query",
+      "expected_source": "POLICY-SALES-2026-01#1",
+      "tarcs_source": "POLICY-SALES-2026-01#1",
+      "baseline_source": "POLICY-SALES-2026-07#1",
+      "outcome": "answered",
+      "correct": true
+    },
+    {
+      "case": "approved_exception",
+      "expected_source": "APPROVAL-EXPO-SZ-2026#7",
+      "tarcs_source": "APPROVAL-EXPO-SZ-2026#7",
+      "baseline_source": "APPROVAL-EXPO-SZ-2026#7",
+      "outcome": "answered",
+      "correct": true
+    },
+    {
+      "case": "unsupported_future_claim",
+      "expected_source": null,
+      "tarcs_source": null,
+      "baseline_source": "CHAT-USER-001#3",
+      "outcome": "abstained",
+      "correct": true
+    }
+  ]
+}

@@ -208,12 +208,21 @@ class ConfluenceConnector:
         return pages
 
     @staticmethod
-    def _read_checkpoint(path: Path) -> dict[str, Any]:
+    def _read_checkpoint(path: Path, tenant_id: str) -> dict[str, Any]:
         if not path.exists():
-            return {"schema_version": 1, "pages": {}}
+            return {"schema_version": 2, "tenant_id": tenant_id, "pages": {}}
         payload = json.loads(path.read_text(encoding="utf-8"))
-        if payload.get("schema_version") != 1 or not isinstance(payload.get("pages"), dict):
+        schema_version = payload.get("schema_version")
+        if schema_version == 1:
+            # v1 checkpoints predated tenant scoping and therefore belong only
+            # to the historical default demo tenant.
+            if tenant_id != "default":
+                raise ValueError("legacy Confluence checkpoint is scoped to the default tenant")
+            payload = {**payload, "schema_version": 2, "tenant_id": "default"}
+        if schema_version not in {1, 2} or not isinstance(payload.get("pages"), dict):
             raise ValueError("unsupported Confluence checkpoint schema")
+        if payload.get("tenant_id") != tenant_id:
+            raise ValueError("Confluence checkpoint belongs to a different tenant")
         return payload
 
     @staticmethod
@@ -231,12 +240,15 @@ class ConfluenceConnector:
     def _expire_records(
         service,
         page_ids: set[str],
+        tenant_id: str,
         pending_only: bool,
         keep_version: int | None = None,
     ) -> int:
         expired = 0
         for record in service.store.list_all():
             if record.metadata.get("connector") != "confluence":
+                continue
+            if record.tenant_id != tenant_id:
                 continue
             if str(record.metadata.get("page_id")) not in page_ids:
                 continue
@@ -285,7 +297,14 @@ class ConfluenceConnector:
         explicitly enabled because permission changes can look like deletion.
         """
         checkpoint_file = Path(checkpoint_path)
-        checkpoint = self._read_checkpoint(checkpoint_file)
+        tenant_id = tenant_id.strip()
+        if not tenant_id:
+            raise ValueError("tenant_id cannot be empty")
+        checkpoint = self._read_checkpoint(checkpoint_file, tenant_id)
+        if checkpoint.get("site") not in {None, self.base_url}:
+            raise ValueError("Confluence checkpoint belongs to a different site")
+        if checkpoint.get("space_id") not in {None, self.space_id}:
+            raise ValueError("Confluence checkpoint belongs to a different space")
         old_pages: dict[str, dict[str, Any]] = checkpoint["pages"]
         pages = self.list_pages()
         current_ids = {page.page_id for page in pages}
@@ -303,7 +322,8 @@ class ConfluenceConnector:
             page_records = 0
             for chunk_index, text in enumerate(chunk_text(f"{page.title}\n{page.body}"), 1):
                 identity = (
-                    f"{self.base_url}:{self.space_id}:{page.page_id}:{page.version}:{chunk_index}"
+                    f"{tenant_id}:{self.base_url}:{self.space_id}:"
+                    f"{page.page_id}:{page.version}:{chunk_index}"
                 )
                 record_id = str(uuid5(NAMESPACE_URL, identity))
                 if service.store.get(record_id) is not None:
@@ -338,13 +358,15 @@ class ConfluenceConnector:
                 expired += self._expire_records(
                     service,
                     {page.page_id},
+                    tenant_id,
                     pending_only=True,
                     keep_version=page.version,
                 )
         if expire_missing and missing:
-            expired += self._expire_records(service, set(missing), pending_only=False)
+            expired += self._expire_records(service, set(missing), tenant_id, pending_only=False)
         next_checkpoint = {
-            "schema_version": 1,
+            "schema_version": 2,
+            "tenant_id": tenant_id,
             "site": self.base_url,
             "space_id": self.space_id,
             "pages": {

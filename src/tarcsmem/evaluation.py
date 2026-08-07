@@ -15,6 +15,7 @@ def run_evaluation(db_path: str | Path) -> dict[str, object]:
     results: list[dict[str, object]] = []
     metric = defaultdict(float)
     cases = evaluation_cases()
+    expected_abstentions = sum(1 for case in cases if case["expected_outcome"] == "abstained")
     all_records = service.store.list_all()
     for case in cases:
         result = service.query(str(case["question"]), case["as_of"])
@@ -46,7 +47,11 @@ def run_evaluation(db_path: str | Path) -> dict[str, object]:
         "cases": total,
         "tarcs_accuracy": round(metric["tarcs_correct"] / total, 3),
         "naive_baseline_accuracy": round(metric["baseline_correct"] / total, 3),
-        "correct_abstention_rate": round(metric["correct_abstention"] / total, 3),
+        "expected_abstention_cases": expected_abstentions,
+        "correct_abstentions": int(metric["correct_abstention"]),
+        "correct_abstention_rate": round(metric["correct_abstention"] / expected_abstentions, 3)
+        if expected_abstentions
+        else None,
         "avg_selected_records": round(metric["selected_records"] / total, 2),
         "avg_estimated_context_tokens": round(metric["selected_tokens"] / total, 2),
         "results": results,

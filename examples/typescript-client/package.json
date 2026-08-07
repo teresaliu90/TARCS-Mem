@@ -1,0 +1,13 @@
+{
+  "name": "tarcsmem-typescript-smoke-example",
+  "version": "0.8.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "TARCSMEM_CONTRACT_ONLY=1 node --experimental-strip-types src/client.ts",
+    "smoke": "node --experimental-strip-types src/client.ts"
+  }
+}

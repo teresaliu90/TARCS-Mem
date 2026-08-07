@@ -6,7 +6,9 @@
 ![Python 3.11 与 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776AB)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1f7a52.svg)](LICENSE)
 
-[English README](README.md) · [治理控制台](docs/CONSOLE.md) · [MCP 与 OpenAI 接入](docs/INTEGRATIONS.md) · [DeepSeek 云端配置](docs/DEEPSEEK_API_CN.md) · [生产部署手册](docs/PRODUCTION_DEPLOYMENT.md) · [社区版与企业服务边界](docs/COMMUNITY_AND_ENTERPRISE_CN.md) · [架构说明](docs/ARCHITECTURE.md) · [治理流水线设计](docs/GOVERNANCE_PIPELINE_DESIGN.md) · [下一阶段升级方案](docs/NEXT_STAGE_UPGRADE_PLAN.md) · [安全设计](docs/SECURITY.md) · [可观测性](docs/OBSERVABILITY.md) · [真实评测](docs/EVALUATION.md)
+[English](README.md) · [5 分钟上手](#5-分钟运行治理控制台) · [10 分钟演示](docs/demo/TEN_MINUTE_DEMO_CN.md) · [合成试点报告](docs/SYNTHETIC_PILOT_REPORT_CN.md) · [TypeScript 客户端](examples/typescript-client/README.md) · [参与贡献](CONTRIBUTING.md)
+
+[架构](docs/ARCHITECTURE.md) · [治理控制台](docs/CONSOLE.md) · [集成](docs/INTEGRATIONS.md) · [安全](SECURITY.md) · [生产边界](docs/PRODUCTION_DEPLOYMENT.md) · [路线图](ROADMAP.md)
 
 ## 项目状态
 
@@ -16,6 +18,7 @@ Design Partner 试点，并非已认证的企业生产安全产品。仓库已�
 [路线图](ROADMAP.md)、[下一阶段升级方案](docs/NEXT_STAGE_UPGRADE_PLAN.md)和
 [社区版与企业服务边界](docs/COMMUNITY_AND_ENTERPRISE_CN.md)。愿意参加 30 分钟合成数据评审的
 工程师可直接使用[企业工程师反馈与匿名试点执行包](docs/DESIGN_PARTNER_FEEDBACK_KIT_CN.md)。
+当前[合成试点报告](docs/SYNTHETIC_PILOT_REPORT_CN.md)由维护者运行，不是客户案例，也不代表外部采用。
 
 ## 项目解决什么问题
 
@@ -43,7 +46,7 @@ TARCS-Mem 在知识写入、检索和生成之间增加可解释的治理层：
 - **Confluence 真实增量同步**：基于 Confluence Cloud REST API v2，支持游标分页、版本与内容哈希检查点、确定性幂等 ID、安全删除确认和默认人工审核。
 - **新手友好的治理控制台**：通过三步引导完成演示数据确认、治理问答和回答证据链查看，也可继续使用可信记忆、具名人工审核、隐私安全 Trace 和集成配置。
 
-![TARCS-Mem 回答证据链](docs/demo/assets/05-answer-evidence-chain-v08.jpg)
+![TARCS-Mem v0.8 治理总览](docs/demo/assets/01-governance-overview-v08.jpg)
 
 | 普通 RAG | TARCS-Mem |
 | --- | --- |
@@ -87,6 +90,22 @@ tarcsmem serve --db ./data/tarcsmem-demo.db --port 8000
 3. 点击“查看回答证据链”，查看回答 ID、采用/排除证据、策略引用、验证结果和写入沿袭。
 
 整个过程不需要模型 API Key、模型下载或向量数据库。页面明确显示 SQLite 参考存储尚不具备不可篡改证明。启用 `TARCSMEM_API_KEY` 后，在“集成中心 → 配置 API Key”填写令牌；令牌只保存在当前浏览器标签页。详细说明见 [治理控制台指南](docs/CONSOLE.md)。
+同一条关键路径已经加入 CI，也可以通过
+[`./scripts/verify_quickstart.sh`](docs/QUICKSTART_VERIFICATION.md)一键复现。
+
+### 第一次运行可以证明什么
+
+![回答证据链：采用证据、策略版本与验证结果](docs/demo/assets/02-answer-evidence-chain-v08.jpg)
+
+- 7 月新制度替代 1 月旧制度，但历史版本没有被删除；
+- 未批准会议纪要仍在审核队列，不能进入回答证据；
+- 带业务日期的查询引用 `POLICY-SALES-2026-07#1`，并生成稳定回答/审计 ID；
+- 证据链显示采用原因、策略版本、写入事件和验证结果；
+- SQLite 参考存储如实显示 `chain_verified: false`。
+
+接下来可运行 [10 分钟现场演示](docs/demo/TEN_MINUTE_DEMO_CN.md)、查看
+[维护者合成试点报告](docs/SYNTHETIC_PILOT_REPORT_CN.md)，或运行
+[零第三方依赖的 Node.js 22 TypeScript 客户端](examples/typescript-client/README.md)。这些材料都不冒充真实客户部署。
 
 ### 最小 Python 示例
 
@@ -216,12 +235,13 @@ tarcsmem evaluate-public --queries 120 --distractors 300 \
   --output docs/benchmarks/fiqa-public-report.json
 ```
 
-当前自动化测试共 **98 项**，覆盖治理、安全、ACL、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、回答审计 API、限流、幂等写入/查询、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、可选依赖、Docker 构建，并从 wheel 在全新环境中执行 CLI 冒烟测试。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
+当前自动化测试共 **107 项**，覆盖治理、安全、ACL、跨租户对抗契约、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、回答审计 API、限流、幂等写入/查询、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、Node 22 TypeScript 客户端、干净 Quickstart、可选依赖、wheel 和 Docker 构建。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
 
 已实现的 `AnswerAuditTrail` 类型、`get_answer_audit_trail(answer_id)` 服务接口、HTTP API、
 权限边界与生产限制见 [回答审计链设计](docs/ANSWER_AUDIT_TRAIL_DESIGN.md)。
 
-经验证的旧版 v0.7 中文演示和逐秒脚本保留在 [docs/demo](docs/demo/)；当前产品界面为 v0.8 治理控制台。
+当前 v0.8 的 [10 分钟现场演示脚本](docs/demo/TEN_MINUTE_DEMO_CN.md)和实测截图保存在
+[docs/demo](docs/demo/)；旧版 v0.7 视频仅作历史保留，不代表完整的当前控制台。
 
 ## 典型场景
 
@@ -236,7 +256,7 @@ src/tarcsmem/       核心治理、检索、Agent、API 与 UI
 console/            React / TypeScript 治理控制台源码
 tests/              单元测试与治理工作流测试
 docs/               架构、算法、数据集、安全与运行说明
-examples/           可复制的 MCP 与 OpenAI 兼容接入示例
+examples/           可复制的 MCP、OpenAI 兼容与 TypeScript 接入示例
 .github/workflows/  GitHub Actions 持续集成
 ```
 

@@ -24,6 +24,26 @@ jobs:
         working-directory: console
       - run: git diff --exit-code -- src/tarcsmem/console_dist
 
+  quickstart-and-typescript-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: examples/typescript-client/package-lock.json
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e '.[api]'
+      - run: npm ci
+        working-directory: examples/typescript-client
+      - run: npm run typecheck
+        working-directory: examples/typescript-client
+      - run: TARCSMEM_RUN_TYPESCRIPT_SMOKE=1 ./scripts/verify_quickstart.sh
+
   test:
     strategy:
       matrix:

@@ -13,6 +13,39 @@ ASCII_TOKEN_RE = re.compile(r"[A-Za-z0-9_]+")
 HAN_RUN_RE = re.compile(r"[\u4e00-\u9fff]+")
 
 
+def record_access_denial(record: MemoryRecord, access: AccessContext) -> str | None:
+    """Return a privacy-safe denial reason, or ``None`` when access is allowed.
+
+    This boundary deliberately ignores lifecycle status and business time so it
+    can be shared by current-memory, history, review, and retrieval APIs.  The
+    retrieval pipeline applies its stricter status/time rules afterwards.
+    """
+
+    if record.tenant_id != access.tenant_id:
+        return "access denied: tenant boundary"
+    if record.classification == "restricted" and not record.allowed_roles:
+        return "access denied: restricted ACL missing"
+    if record.allowed_roles and not (set(record.allowed_roles) & access.roles):
+        return "access denied: role not allowed"
+    return None
+
+
+def filter_accessible_records(
+    records: Iterable[MemoryRecord], access: AccessContext
+) -> tuple[list[MemoryRecord], list[dict[str, str]]]:
+    """Apply tenant and document ACL checks without disclosing required roles."""
+
+    accessible: list[MemoryRecord] = []
+    denied: list[dict[str, str]] = []
+    for record in records:
+        reason = record_access_denial(record, access)
+        if reason is None:
+            accessible.append(record)
+        else:
+            denied.append({"id": record.id, "reason": reason})
+    return accessible, denied
+
+
 def tokens(text: str) -> list[str]:
     """Return ASCII terms and Chinese character bigrams.
 
@@ -95,20 +128,9 @@ class TARCSRetriever:
         access: AccessContext | None = None,
     ) -> tuple[list[MemoryRecord], list[dict[str, str]]]:
         access = access or AccessContext()
+        accessible, excluded = filter_accessible_records(records, access)
         eligible: list[MemoryRecord] = []
-        excluded: list[dict[str, str]] = []
-        for record in records:
-            if record.tenant_id != access.tenant_id:
-                excluded.append({"id": record.id, "reason": "access denied: tenant boundary"})
-                continue
-            if record.classification == "restricted" and not record.allowed_roles:
-                excluded.append(
-                    {"id": record.id, "reason": "access denied: restricted ACL missing"}
-                )
-                continue
-            if record.allowed_roles and not (set(record.allowed_roles) & access.roles):
-                excluded.append({"id": record.id, "reason": "access denied: role not allowed"})
-                continue
+        for record in accessible:
             historical_version = (
                 record.status is MemoryStatus.SUPERSEDED
                 and record.valid_to is not None
@@ -123,6 +145,15 @@ class TARCSRetriever:
             else:
                 eligible.append(record)
         return eligible, excluded
+
+    def filter_accessible(
+        self,
+        records: Iterable[MemoryRecord],
+        access: AccessContext | None = None,
+    ) -> tuple[list[MemoryRecord], list[dict[str, str]]]:
+        """Public tenant/ACL boundary for projection, history, and admin APIs."""
+
+        return filter_accessible_records(records, access or AccessContext())
 
     def filter_records(
         self,

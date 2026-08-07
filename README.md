@@ -6,7 +6,9 @@
 ![Python 3.11 and 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-3776AB)
 [![License: MIT](https://img.shields.io/badge/license-MIT-1f7a52.svg)](LICENSE)
 
-[中文说明](README.zh-CN.md) · [Governance console](docs/CONSOLE.md) · [MCP & OpenAI integrations](docs/INTEGRATIONS.md) · [DeepSeek cloud setup (中文)](docs/DEEPSEEK_API_CN.md) · [Production deployment](docs/PRODUCTION_DEPLOYMENT.md) · [Community and enterprise direction](docs/COMMUNITY_AND_ENTERPRISE.md) · [Architecture](docs/ARCHITECTURE.md) · [Governance pipeline design](docs/GOVERNANCE_PIPELINE_DESIGN.md) · [Next-stage upgrade plan](docs/NEXT_STAGE_UPGRADE_PLAN.md) · [Algorithm](docs/ALGORITHM.md)
+[中文](README.zh-CN.md) · [5-minute Quickstart](#try-it-in-five-minutes) · [10-minute demo](docs/demo/TEN_MINUTE_DEMO_CN.md) · [Synthetic pilot](docs/SYNTHETIC_PILOT_REPORT_CN.md) · [TypeScript client](examples/typescript-client/README.md) · [Contributing](CONTRIBUTING.md)
+
+[Architecture](docs/ARCHITECTURE.md) · [Governance console](docs/CONSOLE.md) · [Integrations](docs/INTEGRATIONS.md) · [Security](SECURITY.md) · [Production boundary](docs/PRODUCTION_DEPLOYMENT.md) · [Roadmap](ROADMAP.md)
 
 ## Project status
 
@@ -18,13 +20,15 @@ deployment responsibilities or roadmap work. See the [roadmap](ROADMAP.md),
 [next-stage plan](docs/NEXT_STAGE_UPGRADE_PLAN.md) and
 [Community/Enterprise boundary](docs/COMMUNITY_AND_ENTERPRISE.md). Engineers interested in a
 30-minute, synthetic-data review can use the
-[design-partner feedback and pilot kit (Chinese)](docs/DESIGN_PARTNER_FEEDBACK_KIT_CN.md).
+[design-partner feedback and pilot kit (Chinese)](docs/DESIGN_PARTNER_FEEDBACK_KIT_CN.md). The
+current [synthetic pilot report](docs/SYNTHETIC_PILOT_REPORT_CN.md) is maintainer-run evidence,
+not a customer case study or external adoption claim.
 
 TARCS-Mem answers a question that ordinary memory/RAG layers leave open: **which new facts may become active enterprise memory, and which evidence may be used to answer right now?**
 
 It is deliberately not another general-purpose chatbot. It is a reusable governance layer for policy Q&A, ERP/operations assistants, and other enterprise agents where stale, low-authority, or unverified information is harmful.
 
-![TARCS-Mem answer evidence chain](docs/demo/assets/05-answer-evidence-chain-v08.jpg)
+![TARCS-Mem v0.8 governance overview](docs/demo/assets/01-governance-overview-v08.jpg)
 
 | Ordinary RAG | TARCS-Mem |
 | --- | --- |
@@ -60,7 +64,7 @@ It is deliberately not another general-purpose chatbot. It is a reusable governa
 - **LangChain and LlamaIndex adapters** – convert governed evidence into each framework's native retriever with one function call; neither adapter can read the unfiltered candidate pool.
 - **Incremental Confluence connector** – Confluence Cloud REST API v2 cursor pagination, version/hash checkpoints, deterministic retry-safe IDs, safe deletion handling and human-review defaults.
 - **Beginner-friendly governance console** – one FastAPI-served React workspace for health, safe query experiments, governed memories, named human review, privacy-safe traces and integrations.
-- **Production-oriented delivery** – retry-safe write/query idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 98 tests, Python 3.11/3.12 and Node CI, clean-wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
+- **Production-oriented delivery** – retry-safe write/query idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 107 tests, Python 3.11/3.12 and Node 22 CI, clean Quickstart/TypeScript/wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
 
 `TARCS-Mem` is a reference implementation, not a claim of production certification. Request-body roles are demo inputs, not trusted identity claims. A real production deployment must bind tenant/roles from OIDC/SSO, externalize authorization policy, add encryption/key management, malware scanning, retention controls, SIEM export, backup/restore and load/red-team tests.
 
@@ -111,6 +115,8 @@ Open `http://127.0.0.1:8000/console/` and follow the three-step first-run guide:
 
 This first experience needs no model API key, model download or vector database. The displayed
 SQLite integrity notice is intentional: the reference store is not an immutable audit ledger.
+The same critical path runs in CI and can be reproduced with
+[`./scripts/verify_quickstart.sh`](docs/QUICKSTART_VERIFICATION.md).
 
 You can also inspect the same governed answer from the command line:
 
@@ -123,6 +129,21 @@ tarcsmem ask --db ./data/tarcsmem-demo.db \
 The v0.8 console uses the same API and needs no separate frontend process. If `TARCSMEM_API_KEY`
 is enabled, enter the token in **Integration center → Configure API Key**; it is kept
 only in the current browser tab. See [the console guide](docs/CONSOLE.md).
+
+### What the first run proves
+
+![Answer evidence chain with selected lineage, policy and verification](docs/demo/assets/02-answer-evidence-chain-v08.jpg)
+
+- the July policy replaces the January policy without deleting history;
+- the unapproved meeting note remains in review and cannot become answer evidence;
+- a business-date query cites `POLICY-SALES-2026-07#1` and receives stable answer/audit IDs;
+- the evidence chain exposes selection reasons, policy version, write events and verification;
+- the SQLite reference store honestly reports `chain_verified: false`.
+
+Continue with the [10-minute live demo](docs/demo/TEN_MINUTE_DEMO_CN.md), the
+[maintainer-run synthetic pilot report](docs/SYNTHETIC_PILOT_REPORT_CN.md), or the
+[dependency-free Node.js 22 TypeScript client](examples/typescript-client/README.md). None of
+these artifacts claim a real customer deployment.
 
 ### Minimal Python example
 
@@ -344,7 +365,9 @@ The checked-in real-data report now uses **120 FiQA test queries and 610 candida
 
 Core regression tests additionally cover zero-overlap RRF pollution, relevance filtering before token budgeting, true greedy document-only MMR, and candidate oversampling before ACL/status/time filtering. These tests do not retroactively claim a higher FiQA score.
 
-A verified legacy v0.7 Chinese walkthrough and timed narration script remain available under [docs/demo](docs/demo/); the current product surface is the v0.8 governance console.
+The current v0.8 [10-minute live-demo script](docs/demo/TEN_MINUTE_DEMO_CN.md) and verified
+screenshots are under [docs/demo](docs/demo/). The archived v0.7 video remains available but does
+not represent the complete current console.
 
 For a portfolio-quality evaluation, combine the repository's synthetic governance scenarios with LongMemEval (memory), FinQA (financial document/table reasoning), and optionally BIRD Mini-Dev (Text-to-SQL). The exact source links, intended use and non-redistribution rule are in [docs/DATASET.md](docs/DATASET.md).
 
@@ -355,7 +378,7 @@ src/tarcsmem/       core package
 console/            React/TypeScript console source
 tests/              unit and workflow tests
 docs/               architecture, algorithm, data and security notes
-examples/           copy-paste MCP and OpenAI-compatible integrations
+examples/           copy-paste MCP, OpenAI-compatible and TypeScript integrations
 .github/workflows/  CI
 Dockerfile          local API image
 ```

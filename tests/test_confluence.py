@@ -80,9 +80,60 @@ def test_incremental_sync_ingests_only_changed_page_versions(tmp_path):
         MemoryStatus.EXPIRED,
     }
     saved = json.loads(checkpoint.read_text())
+    assert saved["schema_version"] == 2
+    assert saved["tenant_id"] == "default"
     assert saved["pages"]["101"]["version"] == 2
     assert "test-token" not in checkpoint.read_text()
     assert api.requests[0].get_header("Authorization").startswith("Basic ")
+    service.close()
+
+
+def test_checkpoint_is_bound_to_one_tenant_and_cannot_be_reused(tmp_path):
+    source = connector(PageAPI([page()]))
+    service = TARCSMemoryService(tmp_path / "tenant-checkpoint.db")
+    checkpoint = tmp_path / "checkpoint.json"
+    source.sync(service, checkpoint, tenant_id="alpha")
+
+    with pytest.raises(ValueError, match="different tenant"):
+        source.sync(service, checkpoint, tenant_id="beta")
+
+    assert {record.tenant_id for record in service.store.list_all()} == {"alpha"}
+    service.close()
+
+
+def test_deterministic_connector_ids_include_tenant_scope(tmp_path):
+    source = connector(PageAPI([page()]))
+    service = TARCSMemoryService(tmp_path / "tenant-ids.db")
+    source.sync(service, tmp_path / "alpha.json", tenant_id="alpha")
+    source.sync(service, tmp_path / "beta.json", tenant_id="beta")
+
+    records = service.store.list_all()
+    assert len(records) == 2
+    assert len({record.id for record in records}) == 2
+    assert {record.tenant_id for record in records} == {"alpha", "beta"}
+    service.close()
+
+
+def test_version_expiry_never_changes_another_tenants_matching_page(tmp_path):
+    api = PageAPI([page()])
+    source = connector(api)
+    service = TARCSMemoryService(tmp_path / "tenant-expiry.db")
+    source.sync(service, tmp_path / "alpha.json", tenant_id="alpha")
+    source.sync(service, tmp_path / "beta.json", tenant_id="beta")
+    api.pages = [page(version=2, body="<p>差旅上限调整为 600 元。</p>")]
+
+    report = source.sync(service, tmp_path / "beta.json", tenant_id="beta")
+
+    by_tenant = {
+        tenant: [record for record in service.store.list_all() if record.tenant_id == tenant]
+        for tenant in ("alpha", "beta")
+    }
+    assert report.expired_records == 1
+    assert [record.status for record in by_tenant["alpha"]] == [MemoryStatus.PENDING]
+    assert {record.status for record in by_tenant["beta"]} == {
+        MemoryStatus.PENDING,
+        MemoryStatus.EXPIRED,
+    }
     service.close()
 
 

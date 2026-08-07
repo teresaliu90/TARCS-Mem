@@ -122,6 +122,10 @@ class TARCSMemoryService:
         }
 
     def ingest(self, record: MemoryRecord) -> MemoryRecord:
+        # Record IDs are globally unique in the reference store. Never let a
+        # caller overwrite another tenant's projection by reusing its ID.
+        if self.store.get(record.id) is not None:
+            raise ValueError("memory id is unavailable")
         labels = {"source_type": record.source_type.value}
         with self.observability.tracer.span(
             "tarcsmem.guardwrite",
@@ -357,6 +361,11 @@ class TARCSMemoryService:
     ) -> QueryResult:
         """Answer using a pre-filtered candidate set from a vector store or tool."""
         access = access or AccessContext()
+        # Treat tenant and document ACL filtering as a non-observable boundary.
+        # Returning denied record IDs or denial counts would let a caller infer
+        # that another tenant's content exists. Vector/tool candidates are
+        # rechecked here even when their source claims to have filtered them.
+        records, _ = self.retriever.filter_accessible(records, access)
         answer_id = self._public_id("ans")
         evidence_pack_id = self._public_id("pack")
         correlation_id = self._public_id("corr")

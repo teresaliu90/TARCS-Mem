@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import {
   AnswerAuditTrail,
+  ApiError,
   api,
   Integrations,
   Memory,
@@ -64,7 +65,7 @@ function App() {
   const [integrations, setIntegrations] = useState<Integrations | null>(null);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [selected, setSelected] = useState<Memory | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<ApiError | null>(null);
   const [mobileNav, setMobileNav] = useState(false);
   const [apiKeyOpen, setApiKeyOpen] = useState(false);
   const [firstRunProgress, setFirstRunProgress] = useState(() => {
@@ -83,7 +84,7 @@ function App() {
   };
 
   const refresh = async () => {
-    setError("");
+    setError(null);
     try {
       const [nextOverview, nextIntegrations, nextMemories] = await Promise.all([
         api.overview(),
@@ -94,7 +95,11 @@ function App() {
       setIntegrations(nextIntegrations);
       setMemories(nextMemories.items);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "控制台暂时无法连接 API");
+      setError(
+        err instanceof ApiError
+          ? err
+          : new ApiError("unavailable", "治理服务暂时不可用，请稍后重新连接。"),
+      );
     }
   };
   useEffect(() => {
@@ -227,38 +232,48 @@ function App() {
           </div>
         </header>
         <div className="page-wrap">
-          {error && (
-            <div className="alert error">
-              <ShieldAlert size={17} />
-              {error}
-              <button onClick={() => setError("")} aria-label="关闭提示">
-                <X size={15} />
-              </button>
+          {error ? (
+            <div className="panel service-unavailable" role="alert">
+              <Empty
+                icon={<ShieldAlert />}
+                title={
+                  error.code === "unauthorized"
+                    ? "需要连接访问凭证"
+                    : "治理视图暂时不可用"
+                }
+                detail={error.message}
+                actionLabel={
+                  error.code === "unauthorized" ? "配置 API Key" : "重新连接"
+                }
+                onAction={
+                  error.code === "unauthorized"
+                    ? () => setApiKeyOpen(true)
+                    : () => void refresh()
+                }
+              />
             </div>
-          )}
-          {page === "overview" && (
+          ) : page === "overview" ? (
             <OverviewPage
               overview={overview}
               onNavigate={nav}
               firstRunProgress={firstRunProgress}
             />
-          )}
-          {page === "sandbox" && <SandboxPage onProgress={advanceFirstRun} />}
-          {page === "memories" && (
+          ) : page === "sandbox" ? (
+            <SandboxPage onProgress={advanceFirstRun} />
+          ) : page === "memories" ? (
             <MemoriesPage
               memories={memories}
               onSelect={setSelected}
               onRefresh={refresh}
             />
-          )}
-          {page === "review" && (
+          ) : page === "review" ? (
             <ReviewPage
               memories={memories.filter((item) => item.status === "pending")}
               onDone={refresh}
             />
-          )}
-          {page === "observability" && <ObservabilityPage />}
-          {page === "integrations" && (
+          ) : page === "observability" ? (
+            <ObservabilityPage onNavigate={nav} />
+          ) : (
             <IntegrationsPage
               integrations={integrations}
               onConfigureKey={() => setApiKeyOpen(true)}
@@ -496,7 +511,9 @@ function OverviewPage({
             <Empty
               icon={<CheckCircle2 />}
               title="当前没有待处理事件"
-              detail="治理队列保持清洁。"
+              detail="当前没有冲突或待审核事件；可继续检查已生效记忆。"
+              actionLabel="查看可信记忆"
+              onAction={() => onNavigate("memories")}
             />
           )}
         </div>
@@ -784,7 +801,9 @@ function SandboxPage({ onProgress }: { onProgress: (step: number) => void }) {
             <Empty
               icon={<Sparkles />}
               title="等待一次安全测试"
-              detail="选择上方案例，或直接提问。"
+              detail="尚未运行查询；默认合成场景不会发送外部数据。"
+              actionLabel="运行制度版本场景"
+              onAction={() => void run()}
             />
           ) : (
             <>
@@ -1091,8 +1110,21 @@ function MemoriesPage({
         {!filtered.length && (
           <Empty
             icon={<Database />}
-            title="没有匹配的记忆"
-            detail="尝试清空搜索条件。"
+            title={memories.length ? "没有匹配的记忆" : "还没有治理记忆"}
+            detail={
+              memories.length
+                ? "当前搜索或状态筛选没有匹配结果。"
+                : "当前租户尚未写入记忆，或现有记录不在你的访问范围内。"
+            }
+            actionLabel={memories.length ? "清空筛选" : "刷新列表"}
+            onAction={
+              memories.length
+                ? () => {
+                    setFilter("");
+                    setStatusFilter("all");
+                  }
+                : onRefresh
+            }
           />
         )}
       </div>
@@ -1200,7 +1232,9 @@ function ReviewPage({
             <Empty
               icon={<CheckCircle2 />}
               title="审核队列为空"
-              detail="新的候选记忆会出现在这里。"
+              detail="当前没有待审核候选；新候选通过 GuardWrite 后会出现在这里。"
+              actionLabel="刷新审核队列"
+              onAction={onDone}
             />
           )}
         </div>
@@ -1278,7 +1312,9 @@ function ReviewPage({
             <Empty
               icon={<FileCheck2 />}
               title="选择一条待审核记忆"
-              detail="系统会展示来源、影响和建议。"
+              detail="队列中暂无可选择项，或刚刚完成了一次审核。"
+              actionLabel="刷新审核队列"
+              onAction={onDone}
             />
           )}
         </div>
@@ -1295,7 +1331,11 @@ function Impact({ label, value }: { label: string; value: string }) {
   );
 }
 
-function ObservabilityPage() {
+function ObservabilityPage({
+  onNavigate,
+}: {
+  onNavigate: (page: Page) => void;
+}) {
   const [data, setData] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState("");
   const [auditTrail, setAuditTrail] = useState<AnswerAuditTrail | null>(null);
@@ -1393,7 +1433,9 @@ function ObservabilityPage() {
             <Empty
               icon={<Activity />}
               title="还没有 Trace"
-              detail="运行一次安全测试后会在这里显示。"
+              detail="当前进程尚未执行查询，因此没有可展示的安全 Trace。"
+              actionLabel="运行安全测试"
+              onAction={() => onNavigate("sandbox")}
             />
           )}
         </div>
@@ -1440,6 +1482,8 @@ function IntegrationsPage({
   integrations: Integrations | null;
   onConfigureKey: () => void;
 }) {
+  const configuredConnectors =
+    integrations?.items.filter((item) => item.status === "connected") ?? [];
   return (
     <>
       <SectionHeader
@@ -1465,6 +1509,17 @@ function IntegrationsPage({
         </div>
         <ArrowRight size={18} />
       </div>
+      {integrations && configuredConnectors.length === 0 && (
+        <div className="panel connector-empty">
+          <Empty
+            icon={<Network />}
+            title="尚未配置外部连接器"
+            detail="本地合成演示仍可使用；接入真实数据前请先阅读权限与密钥边界。"
+            actionLabel="查看连接器文档"
+            actionHref="https://github.com/teresaliu90/TARCS-Mem/blob/main/docs/INTEGRATIONS.md"
+          />
+        </div>
+      )}
       <div className="integration-grid">
         {integrations?.items.map((item) => (
           <div className="panel integration-card" key={item.id}>
@@ -1693,16 +1748,38 @@ function Empty({
   icon,
   title,
   detail,
+  actionLabel,
+  onAction,
+  actionHref,
 }: {
   icon: ReactNode;
   title: string;
   detail: string;
+  actionLabel: string;
+  onAction?: () => void;
+  actionHref?: string;
 }) {
   return (
-    <div className="empty">
+    <div className="empty" aria-live="polite">
       <span>{icon}</span>
       <strong>{title}</strong>
       <p>{detail}</p>
+      {actionHref ? (
+        <a
+          className="button secondary empty-action"
+          href={actionHref}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {actionLabel}
+          <ArrowRight size={14} />
+        </a>
+      ) : (
+        <button className="button secondary empty-action" onClick={onAction}>
+          {actionLabel}
+          <ArrowRight size={14} />
+        </button>
+      )}
     </div>
   );
 }

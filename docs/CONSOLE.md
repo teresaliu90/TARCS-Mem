@@ -66,6 +66,32 @@ v0.8 在相同的合成制度场景中增加回答 ID、排除摘要、策略/�
 
 当前版本已人工验证 320px 宽度下无横向溢出；提交前仍需运行 TypeScript 类型检查和生产构建。
 
+## 可操作空状态与故障状态
+
+每个空状态都解释“为什么为空”，并且只提供一个主要安全操作：
+
+| 状态 | 主要操作 |
+| --- | --- |
+| 没有治理记忆 | 刷新当前租户的记忆视图 |
+| 没有待审核候选 | 刷新审核队列 |
+| 没有最近 Trace | 打开合成数据安全测试场 |
+| 没有已配置外部连接器 | 打开连接器安全文档 |
+| API / projection 暂时不可用 | 重新连接，不渲染服务端响应正文 |
+
+网络与 HTTP 错误会映射成固定控制台文案，不会直接展示任意 API `detail`、请求正文、
+token 或堆栈。操作使用原生 button/link，并提供可见键盘焦点。
+
+桌面和窄屏验收截图：
+
+![桌面端空记忆状态](demo/assets/03-empty-memory-desktop-v08.jpg)
+
+![390px 窄屏空记忆状态](demo/assets/04-empty-memory-narrow-v08.jpg)
+
+390px 验收结果为 `scrollWidth === clientWidth`，且主操作已经用键盘触发验证。连接器和
+服务不可用状态见
+[`05-empty-connectors-v08.jpg`](demo/assets/05-empty-connectors-v08.jpg) 与
+[`06-service-unavailable-v08.jpg`](demo/assets/06-service-unavailable-v08.jpg)。
+
 ## 前端开发
 
 只有修改控制台源码时才需要 Node.js 22：

@@ -25,6 +25,7 @@ body { margin: 0; min-width: 320px; min-height: 100vh; background: #f5f7f6; }
 button, input, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 button { color: inherit; }
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid rgba(53, 131, 89, .28); outline-offset: 2px; }
 a { color: inherit; }
 
 .app-shell { min-height: 100vh; }
@@ -284,10 +285,14 @@ td small { margin-top: 4px; color: #8b9690; font-size: 8px; }
 .alert button { margin-left: auto; border: 0; background: transparent; cursor: pointer; }
 .alert.error { color: #8f342d; border-color: #edc7c3; background: var(--red-soft); }
 .alert.success { color: #276148; border-color: #cce2d6; background: var(--green-50); }
+.service-unavailable { min-height: 420px; padding: 24px; }
+.connector-empty { margin-bottom: 15px; }
+.connector-empty .empty { min-height: 155px; }
 .empty { min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #89948e; text-align: center; }
 .empty > span { width: 38px; height: 38px; display: grid; place-items: center; margin-bottom: 9px; border-radius: 50%; background: #eef2f0; }
 .empty strong { color: #56635d; font-size: 11px; }
 .empty p { margin: 4px 0 0; font-size: 9px; }
+.empty-action { margin-top: 14px; text-decoration: none; }
 .loading { min-height: 160px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #7b8781; font-size: 11px; }
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -321,7 +326,6 @@ td small { margin-top: 4px; color: #8b9690; font-size: 8px; }
   .integration-grid { grid-template-columns: repeat(2, 1fr); }
   .safety-checks { grid-template-columns: 1fr; }
 }
-
 @media (max-width: 780px) {
   .sidebar { transform: translateX(-100%); transition: transform .2s ease; }
   .sidebar.is-open { transform: translateX(0); }
