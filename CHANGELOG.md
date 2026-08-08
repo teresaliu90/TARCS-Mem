@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Published a customer-data-free Confluence connector contract fixture kit covering cursor
+  pagination, duplicate delivery, bounded retry, partial failure, ACL/classification mapping and
+  explicit missing-page confirmation.
+- Made Confluence record identity sensitive to both version and content hash, so changed content
+  cannot be skipped if an upstream version number is unexpectedly reused.
+- Retained unconfirmed missing pages in checkpoints and recorded explicit expiry events without
+  deleting memory or audit history.
+
 ## 0.8.0 - 2026-08-06
 
 - Added a beginner-friendly React governance console served directly by FastAPI at `/console/`.

@@ -1,0 +1,37 @@
+{
+  "results": [
+    {
+      "id": "91001",
+      "title": "Synthetic Travel Policy",
+      "version": {
+        "number": 1,
+        "createdAt": "2026-08-01T08:00:00Z"
+      },
+      "body": {
+        "storage": {
+          "value": "<h1>Travel policy</h1><p>The synthetic meal limit is 80 units per day.</p>"
+        }
+      },
+      "_links": {
+        "webui": "/wiki/spaces/SYNTH/pages/91001"
+      }
+    },
+    {
+      "id": "91002",
+      "title": "Synthetic Access Handbook",
+      "version": {
+        "number": 3,
+        "createdAt": "2026-08-02T09:30:00Z"
+      },
+      "body": {
+        "storage": {
+          "value": "<h1>Access handbook</h1><p>Review access every 30 synthetic days.</p>"
+        }
+      },
+      "_links": {
+        "webui": "/wiki/spaces/SYNTH/pages/91002"
+      }
+    }
+  ],
+  "_links": {}
+}

@@ -143,14 +143,18 @@ tarcsmem sync-confluence \
 
 The connector follows same-origin cursor links, fetches Confluence storage
 format, converts it to plain text and writes deterministic page-version chunks
-through GuardWrite. Its checkpoint contains only page IDs, version numbers,
+through GuardWrite. Record identity also includes the content hash, so an
+unexpected upstream reuse of a version number cannot hide changed content. Its checkpoint contains only page IDs, version numbers,
 content hashes and update timestamps—never tokens or page bodies. Unchanged
 pages are not written again and a new version expires the older pending chunks.
 
 Missing pages are reported but not deleted by default, because a permission
-change can make a page disappear from an API response. Use `--expire-missing`
+change can make a page disappear from an API response. The last checkpoint entry
+is retained and marked missing until the operator makes a decision. Use `--expire-missing`
 only in a controlled synchronization job after confirming the connector's
-account still has complete space access. Imported pages default to
+account still has complete space access. Confirmation expires the memory
+projection with an explicit audit event; it does not remove the memory or its
+history. Imported pages default to
 `meeting_note` with authority `0.70`, so they require human review. Use
 `--source-type official_policy --authority 1.0` only when the source space has
 an approved publication workflow.
@@ -158,3 +162,15 @@ an approved publication workflow.
 This connector uses Basic authentication over verified TLS, as supported by
 Confluence Cloud API tokens. Give the token read-only, least-privilege access,
 store it in a secret manager and rotate it independently of the checkpoint.
+The connector's ability to read a page is not an end-user ACL mapping: configure
+`--tenant-id`, `--classification` and `--role` from an approved authorization
+policy. Use the documented API, respect rate limits and applicable source terms,
+and never commit captured customer responses.
+
+The [public synthetic connector contract kit](../examples/confluence-contract/README.md)
+contains executable pagination, duplicate-delivery, retry, content-hash,
+partial-failure, ACL/classification and confirmed-deletion fixtures. Run:
+
+```bash
+pytest -q tests/test_confluence_contract.py
+```

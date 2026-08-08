@@ -1,0 +1,21 @@
+{
+  "results": [
+    {
+      "id": "91001",
+      "title": "Synthetic Travel Policy",
+      "version": {
+        "number": 1,
+        "createdAt": "2026-08-03T10:00:00Z"
+      },
+      "body": {
+        "storage": {
+          "value": "<h1>Travel policy</h1><p>The synthetic meal limit is now 90 units per day.</p>"
+        }
+      },
+      "_links": {
+        "webui": "/wiki/spaces/SYNTH/pages/91001"
+      }
+    }
+  ],
+  "_links": {}
+}

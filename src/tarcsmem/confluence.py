@@ -185,8 +185,13 @@ class ConfluenceConnector:
         url = f"/wiki/api/v2/spaces/{self.space_id}/pages?" + urllib.parse.urlencode(
             {"limit": limit, "status": "current", "body-format": "storage"}
         )
-        pages: list[ConfluencePage] = []
+        pages: dict[str, ConfluencePage] = {}
+        visited_urls: set[str] = set()
         while url:
+            safe_url = self._safe_url(url)
+            if safe_url in visited_urls:
+                raise RuntimeError("Confluence pagination returned a repeated cursor")
+            visited_urls.add(safe_url)
             payload = self._request_json(url)
             for item in payload.get("results", []):
                 storage = (item.get("body") or {}).get("storage") or {}
@@ -194,18 +199,22 @@ class ConfluenceConnector:
                 if not body:
                     continue
                 version = item.get("version") or {}
-                pages.append(
-                    ConfluencePage(
-                        page_id=str(item["id"]),
-                        title=str(item.get("title", "Untitled")).strip(),
-                        version=int(version.get("number", 1)),
-                        updated_at=str(version.get("createdAt", item.get("createdAt", ""))),
-                        body=body,
-                        web_path=str((item.get("_links") or {}).get("webui", "")),
-                    )
+                page = ConfluencePage(
+                    page_id=str(item["id"]),
+                    title=str(item.get("title", "Untitled")).strip(),
+                    version=int(version.get("number", 1)),
+                    updated_at=str(version.get("createdAt", item.get("createdAt", ""))),
+                    body=body,
+                    web_path=str((item.get("_links") or {}).get("webui", "")),
                 )
+                previous = pages.get(page.page_id)
+                if previous is not None and previous != page:
+                    raise RuntimeError(
+                        "Confluence pagination returned conflicting payloads for one page"
+                    )
+                pages[page.page_id] = page
             url = str((payload.get("_links") or {}).get("next", ""))
-        return pages
+        return list(pages.values())
 
     @staticmethod
     def _read_checkpoint(path: Path, tenant_id: str) -> dict[str, Any]:
@@ -243,6 +252,8 @@ class ConfluenceConnector:
         tenant_id: str,
         pending_only: bool,
         keep_version: int | None = None,
+        keep_content_hash: str | None = None,
+        reason: str = "Confluence incremental sync",
     ) -> int:
         expired = 0
         for record in service.store.list_all():
@@ -255,6 +266,10 @@ class ConfluenceConnector:
             if (
                 keep_version is not None
                 and int(record.metadata.get("page_version", 0)) == keep_version
+                and (
+                    keep_content_hash is None
+                    or record.metadata.get("content_hash") == keep_content_hash
+                )
             ):
                 continue
             allowed = (
@@ -273,7 +288,7 @@ class ConfluenceConnector:
                 AuditEvent(
                     EventType.STATUS_CHANGED,
                     record.id,
-                    {"status": "expired", "reason": "Confluence incremental sync"},
+                    {"status": "expired", "reason": reason},
                 )
             )
             expired += 1
@@ -319,11 +334,10 @@ class ConfluenceConnector:
         ingested = 0
         expired = 0
         for page in changed:
-            page_records = 0
             for chunk_index, text in enumerate(chunk_text(f"{page.title}\n{page.body}"), 1):
                 identity = (
                     f"{tenant_id}:{self.base_url}:{self.space_id}:"
-                    f"{page.page_id}:{page.version}:{chunk_index}"
+                    f"{page.page_id}:{page.version}:{page.content_hash}:{chunk_index}"
                 )
                 record_id = str(uuid5(NAMESPACE_URL, identity))
                 if service.store.get(record_id) is not None:
@@ -353,30 +367,46 @@ class ConfluenceConnector:
                 )
                 self._ingest(target, record)
                 ingested += 1
-                page_records += 1
-            if page_records:
-                expired += self._expire_records(
-                    service,
-                    {page.page_id},
-                    tenant_id,
-                    pending_only=True,
-                    keep_version=page.version,
-                )
+            # Expire the old projection even when every deterministic record
+            # already exists. This is the expected recovery path when an
+            # earlier run ingested all chunks but failed before checkpointing.
+            expired += self._expire_records(
+                service,
+                {page.page_id},
+                tenant_id,
+                pending_only=True,
+                keep_version=page.version,
+                keep_content_hash=page.content_hash,
+                reason="Confluence page version or content hash was replaced",
+            )
         if expire_missing and missing:
-            expired += self._expire_records(service, set(missing), tenant_id, pending_only=False)
+            expired += self._expire_records(
+                service,
+                set(missing),
+                tenant_id,
+                pending_only=False,
+                reason="Confluence missing page was explicitly confirmed",
+            )
+        next_pages = {
+            page.page_id: {
+                "version": page.version,
+                "content_hash": page.content_hash,
+                "updated_at": page.updated_at,
+            }
+            for page in pages
+        }
+        if not expire_missing:
+            # A page can disappear because connector permissions changed. Keep
+            # the last safe checkpoint entry until an operator explicitly
+            # confirms expiry, so a later --expire-missing run can still act.
+            for page_id in missing:
+                next_pages[page_id] = {**old_pages[page_id], "missing": True}
         next_checkpoint = {
             "schema_version": 2,
             "tenant_id": tenant_id,
             "site": self.base_url,
             "space_id": self.space_id,
-            "pages": {
-                page.page_id: {
-                    "version": page.version,
-                    "content_hash": page.content_hash,
-                    "updated_at": page.updated_at,
-                }
-                for page in pages
-            },
+            "pages": next_pages,
         }
         checkpoint_file.parent.mkdir(parents=True, exist_ok=True)
         temporary = checkpoint_file.with_suffix(checkpoint_file.suffix + ".part")

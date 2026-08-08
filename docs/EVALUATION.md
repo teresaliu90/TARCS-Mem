@@ -4,7 +4,7 @@ TARCS-Mem separates two claims that should not be mixed: governance correctness 
 
 ## Automated verification
 
-The repository has 107 deterministic tests covering admission, temporal versioning, conflict handling, human review, abstention, tenant/role and connector-checkpoint isolation, PII/credential controls, API authentication, DeepSeek provider switching and key-safe failures, governed prompt semantics, answer/record audit privacy, metrics, spans, public-evaluation code and the local Agent path.
+The repository has 115 deterministic tests covering admission, temporal versioning, conflict handling, human review, abstention, tenant/role and connector-checkpoint isolation, the public synthetic Confluence connector contract, PII/credential controls, API authentication, DeepSeek provider switching and key-safe failures, governed prompt semantics, answer/record audit privacy, metrics, spans, public-evaluation code and the local Agent path.
 
 Run:
 

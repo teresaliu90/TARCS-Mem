@@ -62,9 +62,9 @@ It is deliberately not another general-purpose chatbot. It is a reusable governa
 - **MCP v2 integration** – any MCP host can search governed memory; agent-authored proposals are forced into low-authority human review and cannot self-promote to policy.
 - **OpenAI-compatible gateway** – existing chat clients can use `/v1/chat/completions` while TARCS citation, time, access and egress controls remain enforced.
 - **LangChain and LlamaIndex adapters** – convert governed evidence into each framework's native retriever with one function call; neither adapter can read the unfiltered candidate pool.
-- **Incremental Confluence connector** – Confluence Cloud REST API v2 cursor pagination, version/hash checkpoints, deterministic retry-safe IDs, safe deletion handling and human-review defaults.
+- **Incremental Confluence connector** – Confluence Cloud REST API v2 cursor pagination, version/hash checkpoints, deterministic retry-safe IDs, safe deletion handling, human-review defaults and a [public synthetic contract fixture kit](examples/confluence-contract/README.md).
 - **Beginner-friendly governance console** – one FastAPI-served React workspace for health, safe query experiments, governed memories, named human review, privacy-safe traces and integrations.
-- **Production-oriented delivery** – retry-safe write/query idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 107 tests, Python 3.11/3.12 and Node 22 CI, clean Quickstart/TypeScript/wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
+- **Production-oriented delivery** – retry-safe write/query idempotency, rate limits, liveness/readiness endpoints, request IDs, non-root Docker runtime, audit log, 115 tests, Python 3.11/3.12 and Node 22 CI, clean Quickstart/TypeScript/wheel/extras/Docker checks, dependency automation and explicit security/deployment guidance.
 
 `TARCS-Mem` is a reference implementation, not a claim of production certification. Request-body roles are demo inputs, not trusted identity claims. A real production deployment must bind tenant/roles from OIDC/SSO, externalize authorization policy, add encryption/key management, malware scanning, retention controls, SIEM export, backup/restore and load/red-team tests.
 
@@ -247,6 +247,8 @@ tarcsmem sync-confluence --db ./data/tarcsmem.db
 The default source type is `meeting_note`, so imported pages wait for review. Only
 use `--source-type official_policy --authority 1.0` for a space whose publication
 workflow is itself an approved policy control. See [the connector guide](docs/INTEGRATIONS.md#confluence-cloud-incremental-sync).
+Connector contributors can reproduce pagination, retry, checkpoint, ACL, classification and
+confirmed-deletion behavior with the [synthetic contract fixtures](examples/confluence-contract/README.md).
 
 ### Five-minute local UI preview
 

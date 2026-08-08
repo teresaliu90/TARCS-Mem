@@ -43,7 +43,7 @@ TARCS-Mem 在知识写入、检索和生成之间增加可解释的治理层：
 - **MCP v2 接入**：任意 MCP Host 可以检索可信记忆；Agent 提交的记忆被固定为低权威待审核声明，无法冒充正式制度自动激活。
 - **OpenAI 兼容网关**：现有聊天客户端可以调用 `/v1/chat/completions`，同时保留时间、权限、引用和云端出境治理。
 - **LangChain / LlamaIndex 一行式适配**：直接返回两个框架的原生 Retriever，且只能看到通过 GuardRead 的证据。
-- **Confluence 真实增量同步**：基于 Confluence Cloud REST API v2，支持游标分页、版本与内容哈希检查点、确定性幂等 ID、安全删除确认和默认人工审核。
+- **Confluence 真实增量同步**：基于 Confluence Cloud REST API v2，支持游标分页、版本与内容哈希检查点、确定性幂等 ID、安全删除确认、默认人工审核和[公开合成契约 fixture](examples/confluence-contract/README.md)。
 - **新手友好的治理控制台**：通过三步引导完成演示数据确认、治理问答和回答证据链查看，也可继续使用可信记忆、具名人工审核、隐私安全 Trace 和集成配置。
 
 ![TARCS-Mem v0.8 治理总览](docs/demo/assets/01-governance-overview-v08.jpg)
@@ -186,6 +186,7 @@ tarcsmem sync-confluence --db ./data/tarcsmem.db
 ```
 
 默认按 `meeting_note` 低权威来源导入并进入人工审核。只有当该空间本身已有正式发布审批流程时，才使用 `--source-type official_policy --authority 1.0`。完整边界见 [Confluence 增量同步说明](docs/INTEGRATIONS.md#confluence-cloud-incremental-sync)。
+连接器贡献者可使用[合成契约 fixture](examples/confluence-contract/README.md)复现分页、重试、检查点、ACL、分级和显式删除确认行为。
 
 ## 不运行本地大模型：使用 DeepSeek API
 
@@ -235,7 +236,7 @@ tarcsmem evaluate-public --queries 120 --distractors 300 \
   --output docs/benchmarks/fiqa-public-report.json
 ```
 
-当前自动化测试共 **107 项**，覆盖治理、安全、ACL、跨租户对抗契约、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、回答审计 API、限流、幂等写入/查询、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、Node 22 TypeScript 客户端、干净 Quickstart、可选依赖、wheel 和 Docker 构建。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
+当前自动化测试共 **115 项**，覆盖治理、安全、ACL、跨租户对抗契约、API、控制台鉴权边界、MCP v2 协议、OpenAI 兼容接口、LangChain/LlamaIndex 原生调用、Confluence 增量同步与公开合成连接器契约、DeepSeek 云端适配、零配置渲染、云端出境拦截、生成引用校验、回答审计 API、限流、幂等写入/查询、检索回归、可观测性和评测代码。CI 同时验证 React/TypeScript 生产构建、Python 3.11/3.12、Node 22 TypeScript 客户端、干净 Quickstart、可选依赖、wheel 和 Docker 构建。真实公开 FiQA test/qrels 评测现已扩展至 **120 个查询、610 个候选文档**，并比较词法、哈希语义、RRF 和完整 TARCS 四组消融。TARCS 的 Recall@10 为 **0.4446**、MRR@10 为 **0.4839**、NDCG@10 为 **0.3783**；词法基线分别为 0.3624、0.3748 和 0.2988。每项指标附带1000次bootstrap的95%置信区间。该实验仍是有限候选池，不能与完整57.6k文档的BEIR榜单横向比较。详见 [docs/EVALUATION.md](docs/EVALUATION.md)。
 
 已实现的 `AnswerAuditTrail` 类型、`get_answer_audit_trail(answer_id)` 服务接口、HTTP API、
 权限边界与生产限制见 [回答审计链设计](docs/ANSWER_AUDIT_TRAIL_DESIGN.md)。
