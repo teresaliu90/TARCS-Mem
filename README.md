@@ -220,6 +220,31 @@ so citation verification can fail closed before response bytes are released.
 See [the integration guide](docs/INTEGRATIONS.md) for host configuration, curl
 examples and security boundaries.
 
+### TypeScript API client example
+
+The dependency-free [TypeScript client example](examples/typescript_api_client.ts)
+uses Node.js 22's built-in `fetch` to create synthetic governed memory, query it
+as of a business date, print the outcome/citations/trace ID, and retrieve the
+record audit history. Admission status and policy decisions are returned by the
+server; the client never sets them locally.
+
+With the local API running from the five-minute setup above, use a clean Node.js
+22 environment to type-check, smoke-check, and run the example:
+
+```bash
+node scripts/check-typescript-example.mjs
+npx --yes -p typescript tsc --noEmit --strict \
+  --target ES2022 --module NodeNext --moduleResolution NodeNext \
+  --lib ES2022,DOM examples/typescript_api_client.ts
+npx --yes tsx --test examples/typescript_api_client.test.ts
+npx --yes tsx examples/typescript_api_client.ts
+```
+
+Set `TARCSMEM_BASE_URL` when the API is not at
+`http://127.0.0.1:8000/v1`, and set `TARCSMEM_API_KEY` only through the
+environment when bearer authentication is enabled. The example uses synthetic
+data and never contains a credential.
+
 Use TARCS-Mem as a native retriever in an existing framework:
 
 ```python
